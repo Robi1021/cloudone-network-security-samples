@@ -75,7 +75,6 @@
                     },
                     "Parameters": [
                         "DVWAInstanceType",
-                        "DVWAServerAMI",
                         "DVWARemoteAccessCIDR",
                         "DVWAKeyPairName"
                     ]
@@ -114,9 +113,6 @@
                 },
                 "BastionInstanceType": {
                     "default": "Bastion Instance Type"
-                },
-                "DVWAServerAMI": {
-                    "default": "AMI to use for DVWA Instances"
                 },
                 "DVWAInstanceType": {
                     "default": "DVWA Instance Type"
@@ -337,13 +333,6 @@
             "ConstraintDescription": "Must select a valid database instance type.",
             "Default": "db.t3.medium",
             "Description": "Select instance size (compute and memory capacity) for Aurora DB instances. Please check that the selected instance type is available in your region.",
-            "Type": "String"
-        },
-        "DVWAServerAMI": {
-            "Default": "",
-            "Description": "(Optional) Select AMI to use for the DVWA instances. When it's left blank, the default DVWA AMI for your AWS region will be used. When setting an AMI, it must be available in your current region.",
-            "AllowedPattern": "^(ami-([a-zA-Z0-9]{8,})){0,1}$",
-            "ConstraintDescription": "Must be a valid AMI.",
             "Type": "String"
         },
         "DVWAInstanceType": {
@@ -1045,16 +1034,13 @@
             "DependsOn": "VPCStack",
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL":
+                "TemplateURL": {
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/dvwa.template",
                       {
                         "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"aws-quickstart-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters": {
-                    "DVWAServerAMI": {
-                        "Ref": "DVWAServerAMI"
-                    },
                     "DVWAInstanceType": {
                         "Ref": "DVWAInstanceType"
                     },
@@ -1067,17 +1053,11 @@
                             "Outputs.PublicSubnet1ID"
                         ]
                     },
-                    "PublicSubnet2ID": {
-                        "Fn::GetAtt": [
-                            "VPCStack",
-                            "Outputs.PublicSubnet2ID"
-                        ]
-                    },
                     "QSS3BucketName": {
                         "Ref": "QSS3BucketName"
                     },
                     "QSS3KeyPrefix": {
-                        "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-linux-bastion/"
+                        "Ref": "QSS3KeyPrefix"
                     },
                     "DVWARemoteAccessCIDR": {
                         "Ref": "DVWARemoteAccessCIDR"
