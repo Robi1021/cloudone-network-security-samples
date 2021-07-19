@@ -21,7 +21,7 @@ The Quick Start offers two deployment options:
 
 You can also use the AWS CloudFormation templates as a starting point for your own implementation.
 
-## Quick Start architecture for WordPress High Availability by Bitnami on AWS
+### Quick Start architecture for WordPress High Availability by Bitnami on AWS
 
 <img src="docs/edge_deployment.png" name="Network Security Edge Deployment">
 
