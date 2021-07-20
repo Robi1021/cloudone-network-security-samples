@@ -12,6 +12,10 @@ After deploying this Quick Start, you will be able to:
 - Perform various inbound and outbound attacks to validate protection.
 - Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.
 
+## Quick Start architecture for WordPress High Availability by Bitnami and DVWA on AWS
+
+<img src="docs/edge_deployment.png" name="Network Security Edge Deployment">
+
 ## Deployment Steps
 
 The Quick Start offers two deployment options:
@@ -19,11 +23,17 @@ The Quick Start offers two deployment options:
 - Deploying WordPress High Availability by Bitnami and DVWA into a new virtual private cloud (VPC) on AWS
 - Deploying WordPress High Availability by Bitnami and DVWA into an existing VPC on AWS
 
-You can also use the AWS CloudFormation templates as a starting point for your own implementation.
-
-### Quick Start architecture for WordPress High Availability by Bitnami on AWS
-
-<img src="docs/edge_deployment.png" name="Network Security Edge Deployment">
-
 For architectural details, best practices, step-by-step instructions, and customization options, see the 
-[deployment guide](https://fwd.aws/arqWN).
+[Bitnami quickstart deployment guide](https://fwd.aws/arqWN).
+
+Before proceeding to deploy the Quick Start, please create a new SSH key pair for DVWA instance in the AWS region you will be deploying the quickstart to. You may use the same key pair as the one you created for Bastion host if you don't want to create an additional keypair.
+
+Below are the additional parameters for DVWA Configuration that the Quickstart uses:
+
+### DVWA Configuration
+
+| Parameter label (name)                                   | Default        | Description        |
+| :--------------------------------------------------------| :------------- | :--------------- |
+| DVWA Instance Type (DVWAInstanceType)                    | t2.micro       | Amazon EC2 instance type for the DVWA instance            |
+| Allowed DVWA External Access CIDR (DVWARemoteAccessCIDR) | 127.0.0.1/32   | The CIDR IP range that is permitted external SSH access to the bastion host instances. We recommend that you set this value to a trusted IP range |                   |
+| SSH KeyPair Name (DVWAKeyPairName)                       | Requires input | A public/private key pair, which allows you to connect securely to your instance after it launches. When you created an AWS account, this is the key pair you created in your preferred region |
