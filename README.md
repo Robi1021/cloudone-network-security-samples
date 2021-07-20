@@ -18,6 +18,7 @@ After deploying this Quick Start, you will be able to:
 
 ## Deployment Steps
 
+### 1. Deploy sample Wordpress environment with DVWA 
 The Quick Start offers two deployment options:
 
 - Deploying WordPress High Availability by Bitnami and DVWA into a new virtual private cloud (VPC) on AWS
@@ -26,10 +27,9 @@ The Quick Start offers two deployment options:
 For architectural details, best practices, step-by-step instructions, and customization options, see the 
 [Bitnami quickstart deployment guide](https://fwd.aws/arqWN).
 
-Before proceeding to deploy the Quick Start, please create a new SSH key pair for DVWA instance in the AWS region you will be deploying the quickstart to. You may use the same key pair as the one you created for Bastion host if you don't want to create an additional keypair.
+Before proceeding to deploy the Quick Start, please create a new SSH key pair for DVWA instance in the AWS region you will be deploying the Quick Start to. You may use the same key pair as the one you created for Bastion hosts if you don't want to create an additional keypair.
 
 Below are the additional parameters for DVWA Configuration that the Quickstart uses:
-
 ### DVWA Configuration
 
 | Parameter label (name)                                   | Default        | Description        |
@@ -37,3 +37,16 @@ Below are the additional parameters for DVWA Configuration that the Quickstart u
 | DVWA Instance Type (DVWAInstanceType)                    | t2.micro       | Amazon EC2 instance type for the DVWA instance            |
 | Allowed DVWA External Access CIDR (DVWARemoteAccessCIDR) | 127.0.0.1/32   | The CIDR IP range that is permitted external SSH access to the bastion host instances. We recommend that you set this value to a trusted IP range |                   |
 | SSH KeyPair Name (DVWAKeyPairName)                       | Requires input | A public/private key pair, which allows you to connect securely to your instance after it launches. When you created an AWS account, this is the key pair you created in your preferred region |
+
+### 2. Deploying Network Security to your environment
+
+After the CloudFormation stack is successfully deployed, please use the deployment wizard in your CloudOne Network Security console to deploy Network Security Appliance in your environment. For detailed step-by-step instructions on deploying Network Security please check [Deploy Protection](https://cloudone.trendmicro.com/docs/network-security/add_cloud_accounts_appliances/) section
+
+Once the Network Security Virtual Appliances have been succcessfully deployed, make sure they are visible in the CloudOne console and are reporting 'Active' status.
+
+Your environment is now ready to inspect inbound and outbound traffic!
+
+### 3. Perform IPS, Geo and SQL Attacks
+
+Below are some attacks that could be performed on your network to validate the different IPS filters
+
