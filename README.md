@@ -35,10 +35,10 @@ Below are the additional parameters for DVWA Configuration that the Quickstart u
 | Parameter label (name)                                   | Default        | Description        |
 | :--------------------------------------------------------| :------------- | :--------------- |
 | DVWA Instance Type (DVWAInstanceType)                    | t2.micro       | Amazon EC2 instance type for the DVWA instance            |
-| Allowed DVWA External Access CIDR (DVWARemoteAccessCIDR) | 127.0.0.1/32   | The CIDR IP range that is permitted external SSH access to the bastion host instances. We recommend that you set this value to a trusted IP range |                   |
+| Allowed DVWA External Access CIDR (DVWARemoteAccessCIDR) | 127.0.0.1/32   | The CIDR IP range that is permitted external SSH access to the bastion host instances. We recommend that you set this value to a trusted IP range |
 | SSH KeyPair Name (DVWAKeyPairName)                       | Requires input | A public/private key pair, which allows you to connect securely to your instance after it launches. When you created an AWS account, this is the key pair you created in your preferred region |
 
-### 2. Deploying Network Security to your environment
+### 1. Deploying Network Security to your environment
 
 After the CloudFormation stack is successfully deployed, please use the deployment wizard in your CloudOne Network Security console to deploy Network Security Appliance in your environment. For detailed step-by-step instructions on deploying Network Security please check [Deploy Protection](https://cloudone.trendmicro.com/docs/network-security/add_cloud_accounts_appliances/) section
 
@@ -46,7 +46,8 @@ Once the Network Security Virtual Appliances have been succcessfully deployed, m
 
 Your environment is now ready to inspect inbound and outbound traffic!
 
-### 3. Perform IPS, Geo and SQL Attacks
+### 1. Perform IPS, Geo and SQL Attacks
 
-Below are some attacks that could be performed on your network to validate the different IPS filters
-
+Before performing attacks in the table below, please perform the following steps:
+1. Configure respective filter to Block and Log mode in Cloud One console. For detailed steps please check [Customize filter settings using the GUI](https://cloudone.trendmicro.com/docs/network-security/Customize_filter_settings_GUI/)
+2. Distribute profile with filter overrides. For detailed steps please check [Distribute filter overrides to your network](https://cloudone.trendmicro.com/docs/network-security/Filter_overrides_GUI/)
