@@ -88,6 +88,5 @@ Below are some SQL attacks you can perform on your DVWA server
 
 | Filter ID  | Attack                                                   |
 | :--------- | :------------------------------------------------------------ |
-| 3593      | 1. Go to SSL Injection menu on the side navigation panel 
-              2. Enter "?id=a' UNION SELECT "text1","text2";-- -&Submit=Submit" in "User ID" text box and hit submit |
+| 3593      | 1. Go to SSL Injection menu on the side navigation panel 2. Enter "?id=a' UNION SELECT "text1","text2";-- -&Submit=Submit" in "User ID" text box and hit submit |
 | 12365      | curl 'http://www.example.com/includes/main.php?t=7d4580a3910c54d62b46f24c397c8d59&f=g2&type=cmd&id=D7CB4B6E5A21CA596DE0A7E10059C85E'|
