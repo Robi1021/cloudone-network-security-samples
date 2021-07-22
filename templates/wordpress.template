@@ -332,7 +332,7 @@
             "Type": "String"
         },
         "QSS3BucketRegion":{
-          "Default":"us-east-1",
+          "Default":"us-west-1",
           "Description":"The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.",
           "Type":"String"
         },
