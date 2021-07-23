@@ -948,7 +948,7 @@
                 "TemplateURL": {
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml",
                       {
-                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
+                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters": {
@@ -986,7 +986,7 @@
                 "TemplateURL": {
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template",
                       {
-                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
+                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters": {
@@ -1037,7 +1037,7 @@
                 "TemplateURL": {
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/dvwa.template",
                       {
-                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
+                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters": {
@@ -1079,7 +1079,7 @@
                 "TemplateURL":{
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-aws-acm-certificate/quickstart-aws-acm-certificate.template.yaml",
                       {
-                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
+                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters":{
@@ -1107,7 +1107,7 @@
                 "TemplateURL": {
                     "Fn::Sub": ["https://${BucketName}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/wordpress.template",
                       {
-                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment-${AWS::Region}"}, {"Ref":"QSS3BucketName"}]},
+                        "BucketName":{"Fn::If":["UsingDefaultBucket", {"Fn::Sub":"quickstart-ns-edge-deployment"}, {"Ref":"QSS3BucketName"}]},
                         "S3Region":{"Fn::If":["UsingDefaultBucket", {"Ref":"AWS::Region"}, {"Ref":"QSS3BucketRegion"}]}}]
                 },
                 "Parameters": {
