@@ -1,0 +1,379 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Demo CloudFormation for separate VPC for east-west inspection
+#-------------------
+# Parameters: Specified by the user when creating a stack
+#-------------------
+Parameters:
+  IpsInstanceType:
+    AllowedValues:
+      - f1.2xlarge
+      - f1.4xlarge
+      - c5.xlarge
+      - c5.9xlarge
+      - c5.4xlarge
+      - c5.2xlarge
+      - c5n.xlarge
+      - c5n.9xlarge
+      - c5n.4xlarge
+      - c5n.2xlarge
+    Default: c5n.4xlarge
+    Description: AWS EC2 IPS instance type
+    Type: String
+  KeyPairName:
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Description: SSH Key to access instances
+    Type: AWS::EC2::KeyPair::KeyName
+  VpcCidr:
+    Default: 10.0.0.0/24
+    Description: CIDR for the Security VPC. Each Availability Zone uses a /25 CIDR
+    Type: String
+  ApiKey:
+    Type: String
+  VpcId:
+    Type: String
+  IgwId:
+    Type: String
+  Cidr:
+    Description: CIDR Block to use for this deployment. Recommended /25
+    Type: String
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+  TrafficDataPortSecGroup:
+    Type: String
+  MgmtPortSecGroup:
+    Type: String
+  NetworkSecurityInstanceProfile:
+    Type: String
+Mappings:
+  AWSAMIRegionMap:
+    eu-north-1:
+      AMI20211010892: ami-09089e84e8e26b64f
+    ap-south-1:
+      AMI20211010892: ami-0bb4faee68f7cbd25
+    eu-west-3:
+      AMI20211010892: ami-0fb4e9d876c36201a
+    eu-west-2:
+      AMI20211010892: ami-078002c3f6368bb77
+    eu-west-1:
+      AMI20211010892: ami-0cedee39d915786e1
+    ap-northeast-2:
+      AMI20211010892: ami-005e6020738377376
+    ap-northeast-1:
+      AMI20211010892: ami-08e5175abb02d5de9
+    sa-east-1:
+      AMI20211010892: ami-0ab73ed665cffb7d6
+    ca-central-1:
+      AMI20211010892: ami-022001f988b8a9227
+    ap-southeast-1:
+      AMI20211010892: ami-08b0f4618d0956792
+    ap-southeast-2:
+      AMI20211010892: ami-05961fff788e1dc0d
+    eu-central-1:
+      AMI20211010892: ami-0725b9b08a742cfe0
+    us-east-1:
+      AMI20211010892: ami-074fec2cbfc62745e
+    us-east-2:
+      AMI20211010892: ami-03425659d433ea538
+    us-west-1:
+      AMI20211010892: ami-0346f9bbf24feece4
+    us-west-2:
+      AMI20211010892: ami-00afd4ee7f1101134
+    af-south1:
+      AMI20211010892: ami-0a6bfd7a0f93a4943
+    ap-east-1:
+      AMI20211010892: ami-0eef4c54b43719b15
+    me-south-1:
+      AMI20211010892: ami-036c40a2988da6da7
+    eu-south-1:
+      AMI20211010892: ami-001fe5ed24c292c15
+Resources:
+  AwsConnectionSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 0, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSAwsConnectionSubnet'
+              - !Ref AvailabilityZone
+  ExternalConnectionSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 1, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSExternalConnectionSubnet'
+              - !Ref AvailabilityZone
+  InspectionSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 2, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSInspectionSubnet'
+              - !Ref AvailabilityZone
+  SanitizedSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 3, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSSanitizedSubnet'
+              - !Ref AvailabilityZone
+  MgmtSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 4, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSMgmtSubnet'
+              - !Ref AvailabilityZone
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Select [ 5, !Cidr [ !Ref Cidr, 6, 4 ]]
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSPublicSubnet'
+              - !Ref AvailabilityZone
+
+  PublicRtb:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'PublicRtb'
+              - !Ref AvailabilityZone
+  PublicSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRtb
+      SubnetId: !Ref PublicSubnet
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRtb
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IgwId
+  Cidr10Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRtb
+      DestinationCidrBlock: 10.0.0.0/8
+      NetworkInterfaceId: !Ref IPSAPort
+  Cidr172Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRtb
+      DestinationCidrBlock: 172.16.0.0/12
+      NetworkInterfaceId: !Ref IPSAPort
+  Cidr192Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRtb
+      DestinationCidrBlock: 192.168.0.0/16
+      NetworkInterfaceId: !Ref IPSAPort
+
+  NatGw:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+         Fn::GetAtt:
+         - EIP
+         - AllocationId
+      SubnetId:
+         Ref: PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSNatGW'
+              - !Ref AvailabilityZone
+  EIP:
+   Type: AWS::EC2::EIP
+   Properties:
+      Domain: vpc
+
+  MgmtSubnetRtb:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSMgmtRtb'
+              - !Ref AvailabilityZone
+  MgmtSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref MgmtSubnetRtb
+      SubnetId: !Ref MgmtSubnet
+  MgmtPublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref MgmtSubnetRtb
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGw
+
+  ToInspectionRtb:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSToInspectionRtb'
+              - !Ref AvailabilityZone
+  AwsConnSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref ToInspectionRtb
+      SubnetId: !Ref AwsConnectionSubnet
+  ExtConnSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref ToInspectionRtb
+      SubnetId: !Ref ExternalConnectionSubnet
+  ToInspectionRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref ToInspectionRtb
+      DestinationCidrBlock: 0.0.0.0/0
+      NetworkInterfaceId: !Ref IPSAPort
+
+  SanitizedRtb:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join
+            - '-'
+            - - 'NSSanitizedRtb'
+              - !Ref AvailabilityZone
+  InspectionSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref SanitizedRtb
+      SubnetId: !Ref InspectionSubnet
+  SanitizedSubnetRtbAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref SanitizedRtb
+      SubnetId: !Ref SanitizedSubnet
+  SanitizedInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SanitizedRtb
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGw
+
+
+  InstanceIMDSv2:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        MetadataOptions:
+          HttpTokens: 'required'
+  IPSAPort:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      Description: eth1
+      GroupSet:
+        - !Ref TrafficDataPortSecGroup
+      SourceDestCheck: 'false'
+      SubnetId: !Ref InspectionSubnet
+  IPSBPort:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      Description: eth2
+      GroupSet:
+        - !Ref TrafficDataPortSecGroup
+      SourceDestCheck: 'false'
+      SubnetId: !Ref SanitizedSubnet
+  IPSMgmtPort:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      Description: eth0
+      GroupSet:
+        - !Ref 'MgmtPortSecGroup'
+      SourceDestCheck: 'true'
+      SubnetId: !Ref MgmtSubnet
+  VTPS:
+    Type: AWS::EC2::Instance
+    DependsOn: MgmtPublicRoute
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 24
+            VolumeType: gp2
+      ImageId: !FindInMap
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - AMI20211010892
+      InstanceType: !Ref 'IpsInstanceType'
+      KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref NetworkSecurityInstanceProfile
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          NetworkInterfaceId: !Ref 'IPSMgmtPort'
+        - DeviceIndex: '1'
+          NetworkInterfaceId: !Ref 'IPSAPort'
+        - DeviceIndex: '2'
+          NetworkInterfaceId: !Ref 'IPSBPort'
+      UserData:
+        'Fn::Base64':
+          Fn::Sub:
+          - |
+            # -- START VTPS CLI
+            edit
+            high-availability
+            cloudwatch-health period 2
+            exit
+            commit
+            exit
+            cloudone register ${ApiKey}
+            edit
+            interface mgmt
+            host name NetworkSecurity-${AvailabilityZone}
+            commit
+            exit
+            exit
+            save-config -y
+            # -- END VTPS CLI
+            # -- START VTPS CF SIGNAL
+            stack ${AWS::StackName}
+            resource VTPS
+            region ${AWS::Region}
+            # -- END VTPS CF SIGNAL
+          - ApiKey: !Ref ApiKey
+            AvailabilityZone: !Ref AvailabilityZone
