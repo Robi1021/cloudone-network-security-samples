@@ -84,10 +84,10 @@ Below is the list of geofilter attacks you can perform from your Wordpress WebSe
 
 SQL Attacks can be performed on DVWA server that is spun up as part of the Quick Start. In order to perform SQL Attacks, you wil need to first configure the application security level to "Low" in order for attacks to work properly. This can be done as follows:
 
-1. Login to DVWA application from your browser. You can retrieve the DVWAPublicIP from the "Output" tab of your DVWA CloudFormation stack. The URL would be http://<DVWAPublicIP>
+1. Login to DVWA application from your browser. You can retrieve the DVWAPublicIP from the "Output" tab of your DVWA CloudFormation stack. The URL would be `http://<DVWAPublicIP>`
 2. Login to Web Application using following default credentials
-    Username: admin
-    Password: password
+    Username: `admin`
+    Password: `password`
 3. Go to DVWA Security menu on the side navigation panel
 4. Set Security Level to "Low" and hit Submit button
 
