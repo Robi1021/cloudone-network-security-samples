@@ -19,6 +19,9 @@ After deploying this Quick Start, you will be able to:
 
 ## Deployment Steps
 
+*Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
+
+`https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/edge-deployment/templates/edge-deployment.template`
 ### 1. Deploy sample Wordpress environment with DVWA 
 The Quick Start offers two deployment options:
 
