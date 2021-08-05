@@ -7,7 +7,7 @@ Mappings:
       HostedId: "Z1YSHQZHG15GKL"
       AZs: 'ap-northeast-1a,ap-northeast-1c'
     ap-northeast-2:
-      ImageId: "ami-0b827f3319f7447c6"
+      ImageId: "ami-0a0de518b1fc4524c"
       HostedId: "Z20JF4UZKIW1U8"
       AZs: 'ap-northeast-2a,ap-northeast-2b,ap-northeast-2c'
     ap-northeast-3:
@@ -15,59 +15,59 @@ Mappings:
       HostedId: "Z5LXEXXYW11ES"
       AZs: 'ap-northeast-3a,ap-northeast-3b,ap-northeast-3c'
     us-east-2:
-      ImageId: "ami-0233c2d874b811deb"
+      ImageId: "ami-0443305dabd4be2bc"
       HostedId: "ZOJJZC49E0EPZ"
       AZs: 'us-east-2a,us-east-2b,us-east-2c'
     us-east-1:
-      ImageId: "ami-0dc2d3e4c0f9ebd18"
+      ImageId: "ami-0c2b8ca1dad447f8a"
       HostedId: "Z1UJRXOUMOOFQ8"
       AZs: 'us-east-1a,us-east-1b,us-east-1c'
     us-west-1:
       ImageId: "ami-0ed05376b59b90e46"
       HostedId: "Z2MUQ32089INYE"
-      AZs: 'us-west-1a,us-west-1b'
+      AZs: 'us-west-1b,us-west-1c'
     us-west-2:
-      ImageId: "ami-0dc8f589abe99f538"
+      ImageId: "ami-083ac7c7ecf9bb9b0"
       HostedId: "Z2OJLYMUO9EFXC"
       AZs: 'us-west-2a,us-west-2b,us-west-2c'
     ap-south-1:
-      ImageId: "ami-00bf4ae5a7909786c"
+      ImageId: "ami-04db49c0fb2215364"
       HostedId: "Z3VO1THU9YC4UR"
       AZs: 'ap-south-1a,ap-south-1b,ap-south-1c'
     ap-southeast-1:
-      ImageId: "ami-0e5182fad1edfaa68"
+      ImageId: "ami-0f511ead81ccde020"
       HostedId: "ZL327KTPIQFUL"
       AZs: 'ap-southeast-1a,ap-southeast-1b,ap-southeast-1c'
     ap-southeast-2:
-      ImageId: "ami-0c9fe0dec6325a30c"
+      ImageId: "ami-0aab712d6363da7f9"
       HostedId: "Z2RPCDW04V8134"
       AZs: 'ap-southeast-2a,ap-southeast-2b,ap-southeast-2c'
     ca-central-1:
-      ImageId: "ami-0db72f413fc1ddb2a"
+      ImageId: "ami-02f84cf47c23f1769"
       HostedId: "Z19DQILCV0OWEC"
       AZs: 'ca-central-1a,ca-central-1b,ca-central-1d'
     eu-central-1:
-      ImageId: "ami-00f22f6155d6d92c5"
+      ImageId: "ami-0453cb7b5f2b7fca2"
       HostedId: "Z1U9ULNL0V5AJ3"
       AZs: 'eu-central-1a,eu-central-1b,eu-central-1c'
     eu-west-1:
-      ImageId: "ami-058b1b7fe545997ae"
+      ImageId: "ami-02b4e72b17337d6c1"
       HostedId: "ZLY8HYME6SFDD"
       AZs: 'eu-west-1a,eu-west-1b,eu-west-1c'
     eu-west-2:
-      ImageId: "ami-03ac5a9b225e99b02"
+      ImageId: "ami-0d26eb3972b7f8c96"
       HostedId: "ZJ5UAJN8Y3Z2Q"
       AZs: 'eu-west-2a,eu-west-2b,eu-west-2c'
     eu-west-3:
-      ImageId: "ami-062fdd189639d3e93"
+      ImageId: "ami-0d49cec198762b78c"
       HostedId: "Z3KY65QIEKYHQQ"
       AZs: 'eu-west-3a,eu-west-3b,eu-west-3c'
     eu-north-1:
-      ImageId: "ami-00517306b63c4628c"
+      ImageId: "ami-0d441f5643da997cb"
       HostedId: "Z3UWIKFBOOGXPP"
       AZs: 'eu-north-1a,eu-north-1b,eu-north-1c'
     sa-east-1:
-      ImageId: "ami-05e809fbeee38dd5e"
+      ImageId: "ami-0f8243a5175208e08"
       HostedId: "ZCMLWB8V5SYIT"
       AZs: 'sa-east-1a,sa-east-1b,sa-east-1c'
     # ap-east-1:
@@ -86,6 +86,7 @@ Metadata:
           - AllowIP
           - BucketName
           - BucketPrefix
+          - BucketRegion
           - SSMAccess
           - DeployHTTPS
           - DeployC1NS
@@ -126,15 +127,19 @@ Parameters:
     Type: String
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: "Must be a valid IP range of the form x.x.x.x/x"
-    Default: '150.70.14.248/24'
+    Default: '72.48.66.44/32'
   BucketName:
     Description: Name of the bucket where the template is placed
     Type: String
-    Default: 'a-cfn-bucket'
+    Default: 'quickstart-ns-edge-deployment'
   BucketPrefix:
-    Description: Enter the Prefix of the bucket where the template is placed (e.g. c1ns/)
+    Description: bucket prefix
     Type: String
-    Default: 'c1ns/'
+    Default: 'centralized-with-gwlb/'
+  BucketRegion:
+    Description: bucket region
+    Type: String
+    Default: 'us-west-1'
   SSMAccess:
     Description: If enabled, SSM access to the instance will be available.
     Type: String
@@ -186,11 +191,11 @@ Parameters:
     Description: Enter the CloudOne API key you want to use.
     Type: String
     NoEcho: true
-    Default: "F1681527-5EB0-CD2D-B0FA-EFA5DE6F931D:BB9843E9-480D-F07C-3737-FF9306563BDA:j7zgx8e4NxmQDw7DpDMWHMezipf6wfCkUpcoRDtLMpA="
+    Default: "2B63DC27-2498-AADC-B5B4-63CB3FFE880E:134B7928-9F25-63E4-B0A9-B9D0853DB8F9:pZmiQS5nWtOtcUhdSC0DKABDP89WWLDpZqu5WNKGkKM="
   NSVAAMI:
     Description: Enter the AMIID of the NSVA to be deployed
     Type: AWS::EC2::Image::Id
-    Default: "ami-06eca61657c03a42f"
+    Default: "ami-0346f9bbf24feece4"
   InstanceType:
     Description: Select the instance type of NSVA
     Type: String
@@ -265,7 +270,7 @@ Resources:
   BaseVPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}aws-vpc.template.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}aws-vpc.template.yaml
       Parameters:
         NumberOfAZs: 2
         AvailabilityZones: !FindInMap
@@ -279,7 +284,7 @@ Resources:
   BaseSite:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}BaseSite.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}BaseSite.yaml
       Parameters:
         ImageId: !FindInMap
           - RegionMap
@@ -299,7 +304,7 @@ Resources:
     Condition: DeployHTTPS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}AddALB.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}AddALB.yaml
       Parameters:
         DomainName: !Ref DomainName
         SubDomain: !Ref SubDomain
@@ -316,7 +321,7 @@ Resources:
     Condition: DeployHTTPS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}RemoveRecord.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}RemoveRecord.yaml
       Parameters:
         HostZoneID: !Ref HostZoneID
 
@@ -388,7 +393,7 @@ Resources:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}last.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}last.yaml
       Parameters:
         VPC: !GetAtt BaseVPC.Outputs.VPCID
         InternetGateway: !GetAtt BaseVPC.Outputs.IGWID
@@ -409,7 +414,7 @@ Resources:
     Condition: DeploySplunk
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.ap-northeast-1.amazonaws.com/${BucketPrefix}splunk.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}splunk.yaml
       Parameters:
         VPCID: !GetAtt BaseVPC.Outputs.VPCID
         VPCCIDR: !GetAtt BaseVPC.Outputs.VPCCIDR
@@ -424,12 +429,7 @@ Resources:
         PublicSubnet1ID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1ID
         SplunkPassword: !Ref SplunkPassword
         SplunkVersion: !Ref SplunkVersion
-        c1nsStackName: 
-          Fn::Select:
-            - 1
-            - Fn::Split:
-              - /
-              - !Ref c1nsSecurityVPCTemaplte
+        c1nsStackName: !Ref AWS::StackName
         InstanceProfile: !GetAtt BaseSite.Outputs.InstanceProfile
         NeedSSMAccess: !Ref SSMAccess
 
