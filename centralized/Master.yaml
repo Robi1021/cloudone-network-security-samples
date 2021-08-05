@@ -7,7 +7,7 @@ Mappings:
       HostedId: "Z1YSHQZHG15GKL"
       AZs: 'ap-northeast-1a,ap-northeast-1c'
     ap-northeast-2:
-      ImageId: "ami-0a0de518b1fc4524c"
+      ImageId: "ami-0b827f3319f7447c6"
       HostedId: "Z20JF4UZKIW1U8"
       AZs: 'ap-northeast-2a,ap-northeast-2b,ap-northeast-2c'
     ap-northeast-3:
@@ -15,11 +15,11 @@ Mappings:
       HostedId: "Z5LXEXXYW11ES"
       AZs: 'ap-northeast-3a,ap-northeast-3b,ap-northeast-3c'
     us-east-2:
-      ImageId: "ami-0443305dabd4be2bc"
+      ImageId: "ami-0233c2d874b811deb"
       HostedId: "ZOJJZC49E0EPZ"
       AZs: 'us-east-2a,us-east-2b,us-east-2c'
     us-east-1:
-      ImageId: "ami-0c2b8ca1dad447f8a"
+      ImageId: "ami-0dc2d3e4c0f9ebd18"
       HostedId: "Z1UJRXOUMOOFQ8"
       AZs: 'us-east-1a,us-east-1b,us-east-1c'
     us-west-1:
@@ -27,47 +27,47 @@ Mappings:
       HostedId: "Z2MUQ32089INYE"
       AZs: 'us-west-1b,us-west-1c'
     us-west-2:
-      ImageId: "ami-083ac7c7ecf9bb9b0"
+      ImageId: "ami-0dc8f589abe99f538"
       HostedId: "Z2OJLYMUO9EFXC"
       AZs: 'us-west-2a,us-west-2b,us-west-2c'
     ap-south-1:
-      ImageId: "ami-04db49c0fb2215364"
+      ImageId: "ami-00bf4ae5a7909786c"
       HostedId: "Z3VO1THU9YC4UR"
       AZs: 'ap-south-1a,ap-south-1b,ap-south-1c'
     ap-southeast-1:
-      ImageId: "ami-0f511ead81ccde020"
+      ImageId: "ami-0e5182fad1edfaa68"
       HostedId: "ZL327KTPIQFUL"
       AZs: 'ap-southeast-1a,ap-southeast-1b,ap-southeast-1c'
     ap-southeast-2:
-      ImageId: "ami-0aab712d6363da7f9"
+      ImageId: "ami-0c9fe0dec6325a30c"
       HostedId: "Z2RPCDW04V8134"
       AZs: 'ap-southeast-2a,ap-southeast-2b,ap-southeast-2c'
     ca-central-1:
-      ImageId: "ami-02f84cf47c23f1769"
+      ImageId: "ami-0db72f413fc1ddb2a"
       HostedId: "Z19DQILCV0OWEC"
       AZs: 'ca-central-1a,ca-central-1b,ca-central-1d'
     eu-central-1:
-      ImageId: "ami-0453cb7b5f2b7fca2"
+      ImageId: "ami-00f22f6155d6d92c5"
       HostedId: "Z1U9ULNL0V5AJ3"
       AZs: 'eu-central-1a,eu-central-1b,eu-central-1c'
     eu-west-1:
-      ImageId: "ami-02b4e72b17337d6c1"
+      ImageId: "ami-058b1b7fe545997ae"
       HostedId: "ZLY8HYME6SFDD"
       AZs: 'eu-west-1a,eu-west-1b,eu-west-1c'
     eu-west-2:
-      ImageId: "ami-0d26eb3972b7f8c96"
+      ImageId: "ami-03ac5a9b225e99b02"
       HostedId: "ZJ5UAJN8Y3Z2Q"
       AZs: 'eu-west-2a,eu-west-2b,eu-west-2c'
     eu-west-3:
-      ImageId: "ami-0d49cec198762b78c"
+      ImageId: "ami-062fdd189639d3e93"
       HostedId: "Z3KY65QIEKYHQQ"
       AZs: 'eu-west-3a,eu-west-3b,eu-west-3c'
     eu-north-1:
-      ImageId: "ami-0d441f5643da997cb"
+      ImageId: "ami-00517306b63c4628c"
       HostedId: "Z3UWIKFBOOGXPP"
       AZs: 'eu-north-1a,eu-north-1b,eu-north-1c'
     sa-east-1:
-      ImageId: "ami-0f8243a5175208e08"
+      ImageId: "ami-05e809fbeee38dd5e"
       HostedId: "ZCMLWB8V5SYIT"
       AZs: 'sa-east-1a,sa-east-1b,sa-east-1c'
     # ap-east-1:
@@ -429,7 +429,12 @@ Resources:
         PublicSubnet1ID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1ID
         SplunkPassword: !Ref SplunkPassword
         SplunkVersion: !Ref SplunkVersion
-        c1nsStackName: !Ref AWS::StackName
+        c1nsStackName: 
+          Fn::Select:
+            - 1
+            - Fn::Split:
+              - /
+              - !Ref c1nsSecurityVPCTemaplte
         InstanceProfile: !GetAtt BaseSite.Outputs.InstanceProfile
         NeedSSMAccess: !Ref SSMAccess
 
