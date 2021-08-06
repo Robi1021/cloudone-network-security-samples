@@ -174,17 +174,17 @@ Parameters:
     AllowedValues: [true, false]
     Default: false
   DeployC1NS:
-    Description: If enabled, C1NS deployed option 2 
+    Description: If enabled, C1NS with be deployed in centralized Security VPC
     Type: String
     AllowedValues: [true, false]
     Default: true
   DeployC1NSHA:
-    Description: "[Required 'DeployC1NS' must be set to true] If enabled, C1NS HA deployed."
+    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, C1NS HA deployed."
     Type: String
     AllowedValues: [true, false]
     Default: false
   DeploySplunk:
-    Description: "[Required 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed."
+    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed."
     Type: String
     AllowedValues: [true, false]
     Default: false
@@ -192,30 +192,30 @@ Parameters:
   # If you set the DeployHTTPS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
   DomainName:
-    Description: Enter the domain name to be used for the website.
+    Description: Domain name to be used for the website.
     Type: String
     Default: 'anonymass-nemo.uk'
   SubDomain:
-    Description: Enter the subdomain to be used for the ALB.
+    Description: Subdomain to be used for the ALB.
     Type: String
     Default: ''
   HostZoneID:
-    Description: Enter the ID of the HostZone where the domain you want to use is registered.
+    Description: ID of the HostZone where the domain you want to use is registered.
     Type: String
     Default: 'Z085817336XNWEPQIO5DS'
   # ------------------------------------------------------------#
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
   sshKeyPairName:
-    Description: Select the SSHKey of the EC2 you are using.
+    Description: SSH Key of the EC2 you are using
     Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair
   CloudOneAPIKEY:
-    Description: Enter the CloudOne API key you want to use.
+    Description: CloudOne API key you want to use.
     Type: String
     NoEcho: true
   InstanceType:
-    Description: Select the instance type of NSVA
+    Description: Instance type of NSVA
     Type: String
     AllowedValues:
       - c5.9xlarge
@@ -226,13 +226,13 @@ Parameters:
       - c5n.2xlarge
     Default: c5n.2xlarge
   SecurityVPCCIDR:
-    Description: Specify the CIDR of the VPC where you want to deploy the NSVA.
+    Description: CIDR of the VPC where you want to deploy the NSVA.
     Type: String
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-6]))$"
     ConstraintDescription: "CIDR block parameter must be in the form x.x.x.x/16-26"
     Default: "10.10.10.0/16"
   NsvaCountPerAz:
-    Description: Select the number of NSVA instances to be deployed in the AZ.
+    Description: Number of NSVA instances to be deployed in the AZ.
     Type: Number
     AllowedValues:
       - 1
