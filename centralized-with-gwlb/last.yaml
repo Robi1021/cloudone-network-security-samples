@@ -65,7 +65,7 @@ Parameters:
     Description: Enter the Public Subnet Route Table ID that was originally deployed
     Type: String
   # ------------------------------------------------------------#
-  # Import c1nsSecurityVPCTemaplte stack(security_vpc.yml file)
+  # Import c1nsSecurityVPCTemplate stack(security_vpc.yml file)
   # ------------------------------------------------------------#
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name

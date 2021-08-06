@@ -58,6 +58,48 @@ Mappings:
     # me-south-1:
     #   HostedId: "Z20ZBPC0SS8806"
 
+  NSVAAMIRegionMap:
+    eu-north-1:
+      ImageId: ami-09089e84e8e26b64f
+    ap-south-1:
+      ImageId: ami-0bb4faee68f7cbd25
+    eu-west-3:
+      ImageId: ami-0fb4e9d876c36201a
+    eu-west-2:
+      ImageId: ami-078002c3f6368bb77
+    eu-west-1:
+      ImageId: ami-0cedee39d915786e1
+    ap-northeast-2:
+      ImageId: ami-005e6020738377376
+    ap-northeast-1:
+      ImageId: ami-08e5175abb02d5de9
+    sa-east-1:
+      ImageId: ami-0ab73ed665cffb7d6
+    ca-central-1:
+      ImageId: ami-022001f988b8a9227
+    ap-southeast-1:
+      ImageId: ami-08b0f4618d0956792
+    ap-southeast-2:
+      ImageId: ami-05961fff788e1dc0d
+    eu-central-1:
+      ImageId: ami-0725b9b08a742cfe0
+    us-east-1:
+      ImageId: ami-074fec2cbfc62745e
+    us-east-2:
+      ImageId: ami-03425659d433ea538
+    us-west-1:
+      ImageId: ami-0346f9bbf24feece4
+    us-west-2:
+      ImageId: ami-00afd4ee7f1101134
+    af-south1:
+      ImageId: ami-0a6bfd7a0f93a4943
+    ap-east-1:
+      ImageId: ami-0eef4c54b43719b15
+    me-south-1:
+      ImageId: ami-036c40a2988da6da7
+    eu-south-1:
+      ImageId: ami-001fe5ed24c292c15
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -174,10 +216,10 @@ Parameters:
     Type: String
     NoEcho: true
     Default: "2B63DC27-2498-AADC-B5B4-63CB3FFE880E:134B7928-9F25-63E4-B0A9-B9D0853DB8F9:pZmiQS5nWtOtcUhdSC0DKABDP89WWLDpZqu5WNKGkKM="
-  NSVAAMI:
-    Description: Enter the AMIID of the NSVA to be deployed
-    Type: AWS::EC2::Image::Id
-    Default: "ami-0346f9bbf24feece4"
+  NSVAAMI: !FindInMap
+      - RegionMap
+      - !Ref 'AWS::Region'
+      - ImageId
   InstanceType:
     Description: Select the instance type of NSVA
     Type: String
@@ -315,7 +357,7 @@ Resources:
   # ------------------------------------------------------------#
   # Create c1ns macro template
   # ------------------------------------------------------------#
-  c1nsMacroTemaplte:
+  c1nsMacroTemplate:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -324,7 +366,7 @@ Resources:
   # ------------------------------------------------------------#
   # Create c1ns security vpc template
   # ------------------------------------------------------------#
-  c1nsSecurityVPCTemaplte:
+  c1nsSecurityVPCTemplate:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -346,7 +388,7 @@ Resources:
         SecurityVPCCIDR: !Ref SecurityVPCCIDR
         NsvaCountPerAz: !Ref NsvaCountPerAz
         EnableInspectionLogs: !Ref EnableInspectionLogs
-    DependsOn: c1nsMacroTemaplte
+    DependsOn: c1nsMacroTemplate
 
   # ------------------------------------------------------------#
   # Create the IAM role stack for cross-account deployments 
@@ -358,7 +400,7 @@ Resources:
       TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/ha_lambda_cross_account_iam.yaml
       Parameters:
         SecurityVpcAccountId: !Ref "AWS::AccountId"
-        ExternalId: !GetAtt c1nsSecurityVPCTemaplte.Outputs.ExternalId
+        ExternalId: !GetAtt c1nsSecurityVPCTemplate.Outputs.ExternalId
     DependsOn: ModifyRTTemplate
 
   # ------------------------------------------------------------#
@@ -375,7 +417,7 @@ Resources:
             - 1
             - Fn::Split:
               - /
-              - !Ref c1nsSecurityVPCTemaplte
+              - !Ref c1nsSecurityVPCTemplate
     DependsOn: CrossAccountIAMTemplate
 
   # ------------------------------------------------------------#
@@ -393,7 +435,7 @@ Resources:
         BasePublicSubnet2CIDR: !GetAtt BaseVPC.Outputs.PublicSubnet2CIDR
         BasePublicSubnet1RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet1RouteTable
         BasePublicSubnet2RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet2RouteTable
-        VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemaplte.Outputs.VPCEndpointServiceName
+        VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
         AvailabilityZones:
           Fn::Join:
             - ","
@@ -431,7 +473,7 @@ Resources:
             - 1
             - Fn::Split:
               - /
-              - !Ref c1nsSecurityVPCTemaplte
+              - !Ref c1nsSecurityVPCTemplate
         InstanceProfile: !GetAtt BaseSite.Outputs.InstanceProfile
         NeedSSMAccess: !Ref SSMAccess
 
