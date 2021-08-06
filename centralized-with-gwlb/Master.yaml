@@ -147,21 +147,21 @@ Parameters:
   # Required parameters
   # ------------------------------------------------------------#
   AllowIP:
-    Description: Enter the global IP of the terminal to be tested.
+    Description: Enter the global IP of the terminal to be tested
     Type: String
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: "Must be a valid IP range of the form x.x.x.x/x"
-    Default: '72.48.66.44/32'
+    Default: '127.0.0.1/32'
   BucketName:
     Description: Name of the bucket where the template is placed
     Type: String
     Default: 'quickstart-ns-edge-deployment'
   BucketPrefix:
-    Description: bucket prefix
+    Description: Bucket prefix
     Type: String
     Default: 'centralized-with-gwlb/'
   BucketRegion:
-    Description: bucket region
+    Description: Bucket region
     Type: String
     Default: 'us-west-1'
   SSMAccess:
