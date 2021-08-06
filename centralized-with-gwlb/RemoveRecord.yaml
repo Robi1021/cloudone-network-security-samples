@@ -13,7 +13,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       Path: "/"
-      RoleName: "RemoveRecordLambdaRole"
+      RoleName: !Sub ${AWS::StackName}-RemoveRecordLambdaRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -32,7 +32,7 @@ Resources:
   RemoveRecordLambdaPolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      ManagedPolicyName: "RemoveRecordLambdaPolicy"
+      ManagedPolicyName: !Sub ${AWS::StackName}-RemoveRecordLambdaPolicy
       Path: "/"
       PolicyDocument:
         Version: "2012-10-17"

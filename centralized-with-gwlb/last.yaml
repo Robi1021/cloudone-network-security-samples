@@ -294,7 +294,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       Path: "/"
-      RoleName: "ModifyRouteTableLambdaRole"
+      RoleName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -313,7 +313,7 @@ Resources:
   ModifyRouteTableLambdaPolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      ManagedPolicyName: "ModifyRouteTableLambdaPolicy"
+      ManagedPolicyName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaPolicy
       Path: "/"
       PolicyDocument:
         Version: "2012-10-17"
