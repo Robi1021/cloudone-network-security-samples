@@ -215,7 +215,6 @@ Parameters:
     Description: Enter the CloudOne API key you want to use.
     Type: String
     NoEcho: true
-    Default: "2B63DC27-2498-AADC-B5B4-63CB3FFE880E:134B7928-9F25-63E4-B0A9-B9D0853DB8F9:pZmiQS5nWtOtcUhdSC0DKABDP89WWLDpZqu5WNKGkKM="
   NSVAAMI: !FindInMap
       - RegionMap
       - !Ref 'AWS::Region'

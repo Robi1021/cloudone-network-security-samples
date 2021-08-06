@@ -29,6 +29,7 @@ Parameters:
     Type: String
   ApiKey:
     Type: String
+    NoEcho: true
   AvailabilityZones:
     Description: Availability Zones to use. Each uses a /25 subnet of the VPC
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
