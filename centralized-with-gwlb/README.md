@@ -32,10 +32,10 @@ Below are the parameters for Quick Start:
 | DeployC1NSHA    | false | [KEEP IT to 'false', DOESN'T WORK CURRENTLY] If enabled, C1NS will be deployed in centralized Security VPC |
 | DeploySplunk    | false | [Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed |
 | DomainName    | nonymass-nemo.uk | [Required: 'DeployHTTPS' must be set to true] Domain name to be used for the website |
-| SubDomain    | '' | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
+| SubDomain    | None | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
 | HostZoneID    | Z085817336XNWEPQIO5DS | [Required: 'DeployHTTPS' ID of the HostZone where the domain you want to use is registered. The domain name to be used must be registered in Route53's HostZone. If you have not already done so, please create a new HostZone and register your domain. The HostZone must be public |
-| sshKeyPairName  | '' | [Required: 'DeployC1NS' must be set to true] SSH Key of the EC2 you are using |
-| CloudOneAPIKEY  | '' | [Required: 'DeployC1NS' must be set to true] CloudOne API key you want to use |
+| sshKeyPairName  | None| [Required: 'DeployC1NS' must be set to true] SSH Key of the EC2 you are using |
+| CloudOneAPIKEY  | None | [Required: 'DeployC1NS' must be set to true] CloudOne API key you want to use |
 | InstanceType  | c5n.2xlarge | [Required: 'DeployC1NS' must be set to true] Instance type of NSVA |
 | SecurityVPCCIDR | 10.10.10.0/16 | [Required: 'DeployC1NS' must be set to true] CIDR of the VPC where you want to deploy the NSVA |
 | NsvaCountPerAz  | 1 | [Required: 'DeployC1NS' must be set to true] Number of NSVA instances to be deployed in the AZ |
