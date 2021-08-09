@@ -28,10 +28,18 @@ Below are the parameters for Quick Start:
 | BucketRegion    | us-west-1| Bucket region |
 | SSMAccess    | true | If enabled, SSM access to the instance will be available |
 | DeployHTTPS    | false | If enabled, The HTTPS site will be deployed |
-| DeployC1NS    | true | If enabled, C1NS with be deployed in centralized Security VPC  |
+| DeployC1NS    | true | If enabled, C1NS with be deployed in centralized Security VPC |
+| DeployC1NSHA    | false | [KEEP IT to 'false', DOESN'T WORK CURRENTLY] If enabled, C1NS will be deployed in centralized Security VPC |
+| DeploySplunk    | false | [Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed |
 | DomainName    | nonymass-nemo.uk | [Required: 'DeployHTTPS' must be set to true] Domain name to be used for the website |
-| SubDomain    | '' | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
-| HostZoneID    | Z085817336XNWEPQIO5DS | [Required: 'DeployHTTPS' ID of the HostZone where the domain you want to use is registered |
-| DeploySplunk    | false | [Required: 'DeployC1NS' must be set to true] Subdomain to be used for the ALB. |
-| DeploySplunk    | false | [Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed |
-| DeploySplunk    | false | [Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed |
+| SubDomain    | None | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
+| HostZoneID    | Z085817336XNWEPQIO5DS | [Required: 'DeployHTTPS' ID of the HostZone where the domain you want to use is registered. The domain name to be used must be registered in Route53's HostZone. If you have not already done so, please create a new HostZone and register your domain. The HostZone must be public |
+| sshKeyPairName  | None| [Required: 'DeployC1NS' must be set to true] SSH Key of the EC2 you are using |
+| CloudOneAPIKEY  | None | [Required: 'DeployC1NS' must be set to true] CloudOne API key you want to use |
+| InstanceType  | c5n.2xlarge | [Required: 'DeployC1NS' must be set to true] Instance type of NSVA |
+| SecurityVPCCIDR | 10.10.10.0/16 | [Required: 'DeployC1NS' must be set to true] CIDR of the VPC where you want to deploy the NSVA |
+| NsvaCountPerAz  | 1 | [Required: 'DeployC1NS' must be set to true] Number of NSVA instances to be deployed in the AZ |
+| EnableInspectionLogs  | false | [Required: 'DeployC1NS' must be set to true] If enabled, NSVA Inspection Logs will be published to CloudWatch log group "network_security_logs" |
+| SyslogPort  | 5140 | [Required: 'DeploySplunk' must be set to true] Port number used by Splunk Server |
+| SplunkPassword  | Trendmicr0! | [Required: 'DeploySplunk' must be set to true] Password used by Splunk Server |
+| SplunkVersion  | 8.2 | [Required: 'DeploySplunk' must be set to true] Splunk Version |
