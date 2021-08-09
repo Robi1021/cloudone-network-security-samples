@@ -5,3 +5,4 @@ This repository is intended for Cloud One Network Security customers. It contain
 Below are 2 deployments that this repository currently supports:
 1. [Edge Deployment](edge-deployment/README.md)
 2. [East West Deployment](east-west-deployment/README.md)
+3. [Centralized Deployment with Gateway Load Balancer](centralized-with-gwlb/README.md)
