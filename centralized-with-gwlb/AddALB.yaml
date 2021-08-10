@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
   # ------------------------------------------------------------#
@@ -56,7 +56,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostZoneID
-      Comment: DNS for ALB
+      Comment: "DNS for ALB"
       Name: !Sub ${SubDomain}.${DomainName}
       Type: A
       AliasTarget:

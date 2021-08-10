@@ -69,7 +69,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       Path: "/"
-      RoleName: "CreateVPCpeeringLambdaRole"
+      RoleName: !Sub ${AWS::StackName}-CreateVPCpeeringLambdaRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -88,7 +88,7 @@ Resources:
   CreateVPCpeeringLambdaPolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      ManagedPolicyName: "CreateVPCpeeringLambdaPolicy"
+      ManagedPolicyName: !Sub ${AWS::StackName}-CreateVPCpeeringLambdaPolicy
       Path: "/"
       PolicyDocument:
         Version: "2012-10-17"
