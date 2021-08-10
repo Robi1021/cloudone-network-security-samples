@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
   # ------------------------------------------------------------#
@@ -43,22 +43,22 @@ Resources:
   # ------------------------------------------------------------#
   EC2Role:
     Condition: NeedSSM
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
-      Path: "/"
+      Path: /
       RoleName: !Sub ${AWS::StackName}-EC2Role
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
       MaxSessionDuration: 3600
       ManagedPolicyArns: 
-      - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
 
   InstanceProfile:
     Condition: NeedSSM
@@ -66,17 +66,16 @@ Resources:
     Properties:
       Path: /
       Roles:
-        - !Sub ${AWS::StackName}-EC2Role
-    DependsOn: EC2Role
+        - !Ref EC2Role
 
   # ------------------------------------------------------------#
   # Create EC2 Instance
   # ------------------------------------------------------------#
   EC2Instance:
-    Type: "AWS::EC2::Instance"
+    Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref ImageId
-      InstanceType: "t2.micro"
+      InstanceType: t2.micro
       SecurityGroupIds:
         - !Ref EC2SecurityGroup
       IamInstanceProfile: !If
@@ -98,10 +97,10 @@ Resources:
   # Create 2 Security Group for EC2 Instance and ALB
   # ------------------------------------------------------------#
   EC2SecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${AWS::StackName}-EC2-SG
-      GroupDescription: "Used Web Server"
+      GroupDescription: Used Web Server
       VpcId: !Ref VPCId
       SecurityGroupIngress: 
         - 
@@ -117,10 +116,9 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-EC2-SG
-    DependsOn: ALBSecurityGroup
 
   ALBSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${AWS::StackName}-ALB-SG
       GroupDescription: "Used ALB"
@@ -144,15 +142,15 @@ Resources:
   # Create ALB (Only HTTP)
   # ------------------------------------------------------------#
   TargetGroup: 
-    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties: 
       VpcId: !Ref VPCId
       Name: !Sub ${AWS::StackName}-TG
       Protocol: HTTP
       Port: 80
       HealthCheckProtocol: HTTP
-      HealthCheckPath: "/"
-      HealthCheckPort: "traffic-port"
+      HealthCheckPath: /
+      HealthCheckPort: traffic-port
       HealthyThresholdCount: 5
       UnhealthyThresholdCount: 2
       HealthCheckTimeoutSeconds: 5
@@ -163,14 +161,14 @@ Resources:
         - Id: !Ref EC2Instance
           Port: 80
   InternetALB: 
-    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties: 
       Name: !Sub ${AWS::StackName}-ALB
-      Scheme: "internet-facing"
+      Scheme: internet-facing
       LoadBalancerAttributes: 
-        - Key: "deletion_protection.enabled"
+        - Key: deletion_protection.enabled
           Value: false
-        - Key: "idle_timeout.timeout_seconds"
+        - Key: idle_timeout.timeout_seconds
           Value: 4000
       SecurityGroups:
         - !Ref ALBSecurityGroup
@@ -178,7 +176,7 @@ Resources:
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
   ALBListenerHTTP: 
-    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Type: AWS::ElasticLoadBalancingV2::Listener
     Properties: 
       Port: 80
       Protocol: HTTP
