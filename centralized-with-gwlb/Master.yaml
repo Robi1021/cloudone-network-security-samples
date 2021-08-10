@@ -88,7 +88,7 @@ Mappings:
     us-east-2:
       ImageId: ami-03425659d433ea538
     us-west-1:
-      ImageId: ami-0346f9bbf24feece4
+      ImageId: ami-0c61fb7ad31615bc9
     us-west-2:
       ImageId: ami-00afd4ee7f1101134
     af-south1:
