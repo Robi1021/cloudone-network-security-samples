@@ -77,15 +77,15 @@ Parameters:
 Conditions:
   PublicSubnetTag1Condition: !Not
     - !Equals
-      - !Ref 'PublicSubnetTag1'
+      - !Ref PublicSubnetTag1
       - ''
   PublicSubnetTag2Condition: !Not
     - !Equals
-      - !Ref 'PublicSubnetTag2'
+      - !Ref PublicSubnetTag2
       - ''
   PublicSubnetTag3Condition: !Not
     - !Equals
-      - !Ref 'PublicSubnetTag3'
+      - !Ref PublicSubnetTag3
       - ''
 
 Resources:
