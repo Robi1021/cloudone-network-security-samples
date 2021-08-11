@@ -315,7 +315,7 @@ Resources:
   BaseVPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}aws-vpc.template.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
       Parameters:
         NumberOfAZs: 2
         AvailabilityZones:
@@ -331,7 +331,7 @@ Resources:
     DependsOn: BaseVPC
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}dvwa.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
       Parameters:
         DVWAInstanceType: !Ref DVWAInstanceType
         KeyPairName: !Ref sshKeyPairName
@@ -347,7 +347,7 @@ Resources:
   BaseSite:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}BaseSite.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
       Parameters:
         ImageId: !FindInMap
           - RegionMap
@@ -367,7 +367,7 @@ Resources:
     Condition: DeployHTTPS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}AddALB.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/AddALB.yaml
       Parameters:
         DomainName: !Ref DomainName
         SubDomain: !Ref SubDomain
@@ -384,7 +384,7 @@ Resources:
     Condition: DeployHTTPS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}RemoveRecord.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/RemoveRecord.yaml
       Parameters:
         HostZoneID: !Ref HostZoneID
 
@@ -464,7 +464,7 @@ Resources:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}last.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
         VPC: !GetAtt BaseVPC.Outputs.VPCID
         InternetGateway: !GetAtt BaseVPC.Outputs.IGWID
@@ -490,7 +490,7 @@ Resources:
     Condition: DeploySplunk
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}splunk.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/splunk.yaml
       Parameters:
         VPCID: !GetAtt BaseVPC.Outputs.VPCID
         VPCCIDR: !GetAtt BaseVPC.Outputs.VPCCIDR
