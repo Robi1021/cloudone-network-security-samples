@@ -3,13 +3,13 @@ AWSTemplateFormatVersion: "2010-09-09"
 Mappings:
   RegionMap:
     ap-northeast-1:
-      ImageId: "ami-0b276ad63ba2d6009"
+      ImageId: "ami-05f01a6a414be9808"
       HostedId: "Z1YSHQZHG15GKL"
     ap-northeast-2:
-      ImageId: "ami-0b827f3319f7447c6"
+      ImageId: "ami-06835923fab139b98"
       HostedId: "Z20JF4UZKIW1U8"
     ap-northeast-3:
-      ImageId: "ami-0e787554e61105680"
+      ImageId: "ami-081eaee471c0e1518"
       HostedId: "Z5LXEXXYW11ES"
     us-east-2:
       ImageId: "ami-0233c2d874b811deb"
@@ -84,15 +84,15 @@ Mappings:
     eu-central-1:
       ImageId: ami-0725b9b08a742cfe0
     us-east-1:
-      ImageId: ami-074fec2cbfc62745e
+      ImageId: ami-0c55b11b8c1850074
     us-east-2:
-      ImageId: ami-03425659d433ea538
+      ImageId: ami-049ac6c43ccc0eb59
     us-west-1:
       ImageId: ami-0c61fb7ad31615bc9
     us-west-2:
-      ImageId: ami-00afd4ee7f1101134
+      ImageId: ami-0abee844f98a90719
     af-south1:
-      ImageId: ami-0a6bfd7a0f93a4943
+      ImageId: ami-07beb2f931b25bac4
     ap-east-1:
       ImageId: ami-0eef4c54b43719b15
     me-south-1:
