@@ -1,62 +1,62 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 
 Mappings:
   RegionMap:
     ap-northeast-1:
-      ImageId: "ami-0b276ad63ba2d6009"
-      HostedId: "Z1YSHQZHG15GKL"
+      ImageId: ami-0b276ad63ba2d6009
+      HostedId: Z1YSHQZHG15GKL
     ap-northeast-2:
-      ImageId: "ami-0b827f3319f7447c6"
-      HostedId: "Z20JF4UZKIW1U8"
+      ImageId: ami-0b827f3319f7447c6
+      HostedId: Z20JF4UZKIW1U8
     ap-northeast-3:
-      ImageId: "ami-0e787554e61105680"
-      HostedId: "Z5LXEXXYW11ES"
+      ImageId: ami-0e787554e61105680
+      HostedId: Z5LXEXXYW11ES
     us-east-2:
-      ImageId: "ami-0233c2d874b811deb"
-      HostedId: "ZOJJZC49E0EPZ"
+      ImageId: ami-0233c2d874b811deb
+      HostedId: ZOJJZC49E0EPZ
     us-east-1:
-      ImageId: "ami-0dc2d3e4c0f9ebd18"
-      HostedId: "Z1UJRXOUMOOFQ8"
+      ImageId: ami-0dc2d3e4c0f9ebd18
+      HostedId: Z1UJRXOUMOOFQ8
     us-west-1:
-      ImageId: "ami-0ed05376b59b90e46"
-      HostedId: "Z2MUQ32089INYE"
+      ImageId: ami-0ed05376b59b90e46
+      HostedId: Z2MUQ32089INYE
     us-west-2:
-      ImageId: "ami-0dc8f589abe99f538"
-      HostedId: "Z2OJLYMUO9EFXC"
+      ImageId: ami-0dc8f589abe99f538
+      HostedId: Z2OJLYMUO9EFXC
     ap-south-1:
-      ImageId: "ami-00bf4ae5a7909786c"
-      HostedId: "Z3VO1THU9YC4UR"
+      ImageId: ami-00bf4ae5a7909786c
+      HostedId: Z3VO1THU9YC4UR
     ap-southeast-1:
-      ImageId: "ami-0e5182fad1edfaa68"
-      HostedId: "ZL327KTPIQFUL"
+      ImageId: ami-0e5182fad1edfaa68
+      HostedId: ZL327KTPIQFUL
     ap-southeast-2:
-      ImageId: "ami-0c9fe0dec6325a30c"
-      HostedId: "Z2RPCDW04V8134"
+      ImageId: ami-0c9fe0dec6325a30c
+      HostedId: Z2RPCDW04V8134
     ca-central-1:
-      ImageId: "ami-0db72f413fc1ddb2a"
-      HostedId: "Z19DQILCV0OWEC"
+      ImageId: ami-0db72f413fc1ddb2a
+      HostedId: Z19DQILCV0OWEC
     eu-central-1:
-      ImageId: "ami-00f22f6155d6d92c5"
-      HostedId: "Z1U9ULNL0V5AJ3"
+      ImageId: ami-00f22f6155d6d92c5
+      HostedId: Z1U9ULNL0V5AJ3
     eu-west-1:
-      ImageId: "ami-058b1b7fe545997ae"
-      HostedId: "ZLY8HYME6SFDD"
+      ImageId: ami-058b1b7fe545997ae
+      HostedId: ZLY8HYME6SFDD
     eu-west-2:
-      ImageId: "ami-03ac5a9b225e99b02"
-      HostedId: "ZJ5UAJN8Y3Z2Q"
+      ImageId: ami-03ac5a9b225e99b02
+      HostedId: ZJ5UAJN8Y3Z2Q
     eu-west-3:
-      ImageId: "ami-062fdd189639d3e93"
-      HostedId: "Z3KY65QIEKYHQQ"
+      ImageId: ami-062fdd189639d3e93
+      HostedId: Z3KY65QIEKYHQQ
     eu-north-1:
-      ImageId: "ami-00517306b63c4628c"
-      HostedId: "Z3UWIKFBOOGXPP"
+      ImageId: ami-00517306b63c4628c
+      HostedId: Z3UWIKFBOOGXPP
     sa-east-1:
-      ImageId: "ami-0f8243a5175208e08"
-      HostedId: "ZCMLWB8V5SYIT"
+      ImageId: ami-0f8243a5175208e08
+      HostedId: ZCMLWB8V5SYIT
     # ap-east-1:
-    #   HostedId: "Z3FD1VL90ND7K5"
+    #   HostedId: Z3FD1VL90ND7K5
     # me-south-1:
-    #   HostedId: "Z20ZBPC0SS8806"
+    #   HostedId: Z20ZBPC0SS8806
 
   NSVAAMIRegionMap:
   # IPS_AMI--2021.1.0.10892
