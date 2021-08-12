@@ -37,22 +37,22 @@ Below are the parameters for Quick Start:
 ##### If you set the DeployHTTPS parameter to true, the following parameters are required
 | Parameter label (name) | Default        | Description                                                    |
 | :----------------------| :------------- | :------------------------------------------------------------- |
-| DomainName    | None | [Required: 'DeployHTTPS' must be set to true] Domain name to be used for the website |
-| SubDomain    | None | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
-| HostZoneID    | None | [Required: 'DeployHTTPS' ID of the HostZone where the domain you want to use is registered. The domain name to be used must be registered in Route53's HostZone. If you have not already done so, please create a new HostZone and register your domain. The HostZone must be public |
+| DomainName    | None | Domain name to be used for the website |
+| SubDomain    | None | Subdomain to be used for the ALB. |
+| HostZoneID    | None | ID of the HostZone where the domain you want to use is registered. The domain name to be used must be registered in Route53's HostZone. If you have not already done so, please create a new HostZone and register your domain. The HostZone must be public |
 
 ##### If you set the DeployC1NS parameter to true, the following parameters are required
 | Parameter label (name) | Default        | Description                                                    |
 | :----------------------| :------------- | :------------------------------------------------------------- |
-| CloudOneAPIKEY  | None | [Required: 'DeployC1NS' must be set to true] CloudOne API key you want to use |
-| InstanceType  | c5n.2xlarge | [Required: 'DeployC1NS' must be set to true] Instance type of NSVA |
-| SecurityVPCCIDR | 10.10.10.0/16 | [Required: 'DeployC1NS' must be set to true] CIDR of the VPC where you want to deploy the NSVA |
-| NsvaCountPerAz  | 1 | [Required: 'DeployC1NS' must be set to true] Number of NSVA instances to be deployed in the AZ |
-| EnableInspectionLogs  | false | [Required: 'DeployC1NS' must be set to true] If enabled, NSVA Inspection Logs will be published to CloudWatch log group "network_security_logs" |
+| CloudOneAPIKEY  | None | CloudOne API key you want to use |
+| InstanceType  | c5n.2xlarge | Instance type of NSVA |
+| SecurityVPCCIDR | 10.10.10.0/16 | CIDR of the VPC where you want to deploy the NSVA |
+| NsvaCountPerAz  | 1 | Number of NSVA instances to be deployed in the AZ |
+| EnableInspectionLogs  | false | If enabled, NSVA Inspection Logs will be published to CloudWatch log group "network_security_logs" |
 
 ##### If you set the DeploySplunk parameter to true, the following parameters are required
 | Parameter label (name) | Default        | Description                                                    |
 | :----------------------| :------------- | :------------------------------------------------------------- |
-| SyslogPort  | 5140 | [Required: 'DeploySplunk' must be set to true] Port number used by Splunk Server |
-| SplunkPassword  | None | [Required: 'DeploySplunk' must be set to true] Password used by Splunk Server |
-| SplunkVersion  | 8.2 | [Required: 'DeploySplunk' must be set to true] Splunk Version |
+| SyslogPort  | 5140 | Port number used by Splunk Server |
+| SplunkPassword  | None | Password used by Splunk Server |
+| SplunkVersion  | 8.2 | Splunk Version |
