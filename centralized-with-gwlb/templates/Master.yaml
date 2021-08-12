@@ -165,6 +165,32 @@ Parameters:
     Description: Bucket region
     Type: String
     Default: 'us-west-1'
+  DVWAInstanceType:
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    Default: t3.micro
+    Description: "Amazon EC2 instance type for the DVWA instances. Damn Vulnerable Web
+      Application (DVWA) hosts are machines placed in the public subnet which are PHP/MySQL Web App and are vulnerable.
+      This allows security professionals to test Network Security in a legal
+      environment. For more information visit: https://dvwa.co.uk/"
+    Type: String
   sshKeyPairName:
     Description: SSH Key of the EC2 you are using
     Type: AWS::EC2::KeyPair::KeyName
