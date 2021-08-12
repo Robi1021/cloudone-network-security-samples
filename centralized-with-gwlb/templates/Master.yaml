@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 
 Mappings:
   RegionMap:
@@ -59,6 +59,7 @@ Mappings:
     #   HostedId: "Z20ZBPC0SS8806"
 
   NSVAAMIRegionMap:
+  # IPS_AMI--2021.1.0.10892
     eu-north-1:
       ImageId: ami-09089e84e8e26b64f
     ap-south-1:
@@ -112,6 +113,7 @@ Metadata:
           - BucketPrefix
           - BucketRegion
           - DVWAInstanceType
+          - sshKeyPairName
           - SSMAccess
           - DeployHTTPS
           - DeployC1NS
@@ -128,7 +130,6 @@ Metadata:
         Label:
           default: If you set the DeployC1NS parameter to true, the following parameters are required
         Parameters:
-          - sshKeyPairName
           - CloudOneAPIKEY
           - InstanceType
           - SecurityVPCCIDR
@@ -164,32 +165,10 @@ Parameters:
     Description: Bucket region
     Type: String
     Default: 'us-west-1'
-  DVWAInstanceType:
-    AllowedValues:
-      - t2.nano
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - t3.micro
-      - t3.small
-      - t3.medium
-      - t3.large
-      - t3.xlarge
-      - t3.2xlarge
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-    Default: t3.micro
-    Description: "Amazon EC2 instance type for the DVWA instances. Damn Vulnerable Web
-      Application (DVWA) hosts are machines placed in the public subnet which are PHP/MySQL Web App and are vulnerable.
-      This allows security professionals to test Network Security in a legal
-      environment. For more information visit: https://dvwa.co.uk/"
-    Type: String
+  sshKeyPairName:
+    Description: SSH Key of the EC2 you are using
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair
   SSMAccess:
     Description: If enabled, SSM access to the instance will be available.
     Type: String
@@ -221,7 +200,7 @@ Parameters:
   DomainName:
     Description: Domain name to be used for the website.
     Type: String
-    Default: 'anonymass-nemo.uk'
+    Default: ''
   SubDomain:
     Description: Subdomain to be used for the ALB.
     Type: String
@@ -229,14 +208,10 @@ Parameters:
   HostZoneID:
     Description: ID of the HostZone where the domain you want to use is registered.
     Type: String
-    Default: 'Z085817336XNWEPQIO5DS'
+    Default: ''
   # ------------------------------------------------------------#
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
-  sshKeyPairName:
-    Description: SSH Key of the EC2 you are using
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: Must be the name of an existing EC2 KeyPair
   CloudOneAPIKEY:
     Description: CloudOne API key you want to use.
     Type: String
@@ -283,7 +258,7 @@ Parameters:
     Description: Password used by Splunk Server
     Type: String
     NoEcho: true
-    Default: 'Trendmicr0!'
+    Default: ''
   SplunkVersion:
     Description: Splunk Version
     Type: String
@@ -327,9 +302,12 @@ Resources:
               - Fn::Select: 
                 - 1
                 - Fn::GetAZs: !Ref AWS::Region
+
+  # ------------------------------------------------------------#
+  # Create DVWA (DVWA Instance)
+  # ------------------------------------------------------------#
   DVWA:
-    DependsOn: BaseVPC
-    Type: 'AWS::CloudFormation::Stack'
+    Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
       Parameters:
@@ -341,6 +319,7 @@ Resources:
         DVWARemoteAccessCIDR: !Ref AllowIP
         QSS3BucketRegion: !Ref BucketRegion
         VPCID: !GetAtt BaseVPC.Outputs.VPCID
+
   # ------------------------------------------------------------#
   # Create Base Site (EC2, SecurityGroup)
   # ------------------------------------------------------------#
@@ -533,3 +512,9 @@ Outputs:
     Condition: DeploySplunk
     Value: !GetAtt SplunkTemplate.Outputs.SplunkInternalIP
     Description: Splunk private IP address  
+  DVWAIP:
+    Value: !GetAtt DVWA.Outputs.DVWAPublicIP
+    Description: DVWA instance Public IP 
+  DVWADeployment:
+    Value: !GetAtt DVWA.Outputs.Postdeployment
+    Description: See the deployment guide for post-deployment steps 
