@@ -9,7 +9,7 @@ This Quick Start deploys WordPress High Availability by Bitnami, which includes 
 After deploying this Quick Start, you will be able to:
 
 - Deploy Network Security Virtual Appliance (NSVA) as an [Edge Protection](https://cloudone.trendmicro.com/docs/network-security/option1/)
-- Configure your security profile in Cloud One Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from inbound and outbound attack.
+- Configure your security profile in Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from inbound and outbound attack.
 - Perform various inbound and outbound attacks to validate protection.
 - Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.
 
@@ -44,9 +44,9 @@ Below are the additional parameters for DVWA Configuration that the Quickstart u
 | SSH KeyPair Name (DVWAKeyPairName)                       | Requires input | A public/private key pair, which allows you to connect securely to your instance after it launches. When you created an AWS account, this is the key pair you created in your preferred region |
 ### 2. Deploying Network Security to your environment
 
-After the CloudFormation stack is successfully deployed, please use the deployment wizard in your CloudOne Network Security console to deploy Network Security Appliance in your environment. For detailed step-by-step instructions on deploying Network Security please check [Deploy Protection](https://cloudone.trendmicro.com/docs/network-security/add_cloud_accounts_appliances/) section
+After the CloudFormation stack is successfully deployed, please use the deployment wizard in your Network Security console to deploy Network Security Appliance in your environment. For detailed step-by-step instructions on deploying Network Security please check [Deploy Protection](https://cloudone.trendmicro.com/docs/network-security/add_cloud_accounts_appliances/) section
 
-Once the Network Security Virtual Appliances have been succcessfully deployed, make sure they are visible in the CloudOne console and are reporting 'Active' status.
+Once the Network Security Virtual Appliances have been succcessfully deployed, make sure they are visible in the Trend Micro Cloud One console and are reporting 'Active' status.
 
 Your environment is now ready to inspect inbound and outbound traffic!
 
@@ -59,7 +59,7 @@ You will need to enable at least `ipsBlock` and `reputationBlock` to see logs fr
 ## Performing IPS, Geo and SQL Attacks
 
 Before performing each attack, please perform the following steps:
-1. Configure respective filter to Block and Log mode in Cloud One console. For detailed steps please check [Customize filter settings using the GUI](https://cloudone.trendmicro.com/docs/network-security/Customize_filter_settings_GUI/)
+1. Configure respective filter to Block and Log mode in Trend Micro Cloud One console. For detailed steps please check [Customize filter settings using the GUI](https://cloudone.trendmicro.com/docs/network-security/Customize_filter_settings_GUI/)
 2. Distribute profile with filter overrides. For detailed steps please check [Distribute filter overrides to your network](https://cloudone.trendmicro.com/docs/network-security/Filter_overrides_GUI/)
 
 ### Outbound Attacks
@@ -74,7 +74,7 @@ Below is the list of outbound attacks you can perform from your Wordpress WebSer
 
 ### Geo Filter Attacks
 
-In order to perform Geo Filter attacks, you need to first configure Geo Filters in Cloud One console by selecting a geographic region to block traffic. For detailed steps on how to configure Geo Filters, please check [Geolocation Filter](https://cloudone.trendmicro.com/docs/network-security/Geo_Location_filtering/). 
+In order to perform Geo Filter attacks, you need to first configure Geo Filters in Trend Micro Cloud One console by selecting a geographic region to block traffic. For detailed steps on how to configure Geo Filters, please check [Geolocation Filter](https://cloudone.trendmicro.com/docs/network-security/Geo_Location_filtering/). 
 
 Below is the list of geofilter attacks you can perform from your Wordpress WebServer. You will need to SSH into the webserver instance via Bastion Host that is created as part of the Quick Start setup.
 

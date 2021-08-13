@@ -238,7 +238,7 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: Must be the name of an existing EC2 KeyPair
   CloudOneAPIKEY:
-    Description: CloudOne API key you want to use.
+    Description: Trend Micro Cloud One API key you want to use.
     Type: String
     NoEcho: true
   InstanceType:

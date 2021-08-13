@@ -9,11 +9,11 @@
 *Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
 
 `https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/centralized-with-gwlb/Master.yaml`
-### 1. Deploy Cloud One Network Security with Centralized Security VPC
+### 1. Deploy Network Security with Centralized Security VPC
 The Quick Start offers two deployment options:
 
-- Deploying Cloud One Network Security with centralized security VPC without High Availability
-- Deploying Cloud One Network Security with centralized security VPC with High Availability
+- Deploying Network Security with centralized security VPC without High Availability
+- Deploying Network Security with centralized security VPC with High Availability
 
 Before proceeding to deploy the Quick Start, please create a new SSH key pair in the AWS region you will be deploying the Quick Start to.
 
@@ -35,7 +35,7 @@ Below are the parameters for Quick Start:
 | SubDomain    | None | [Required: 'DeployHTTPS' must be set to true] Subdomain to be used for the ALB. |
 | HostZoneID    | Z085817336XNWEPQIO5DS | [Required: 'DeployHTTPS' ID of the HostZone where the domain you want to use is registered. The domain name to be used must be registered in Route53's HostZone. If you have not already done so, please create a new HostZone and register your domain. The HostZone must be public |
 | sshKeyPairName  | None| [Required: 'DeployC1NS' must be set to true] SSH Key of the EC2 you are using |
-| CloudOneAPIKEY  | None | [Required: 'DeployC1NS' must be set to true] CloudOne API key you want to use |
+| CloudOneAPIKEY  | None | [Required: 'DeployC1NS' must be set to true] Trend Micro Cloud One API key you want to use |
 | InstanceType  | c5n.2xlarge | [Required: 'DeployC1NS' must be set to true] Instance type of NSVA |
 | SecurityVPCCIDR | 10.10.10.0/16 | [Required: 'DeployC1NS' must be set to true] CIDR of the VPC where you want to deploy the NSVA |
 | NsvaCountPerAz  | 1 | [Required: 'DeployC1NS' must be set to true] Number of NSVA instances to be deployed in the AZ |

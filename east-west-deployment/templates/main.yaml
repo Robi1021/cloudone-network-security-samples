@@ -78,7 +78,7 @@ Resources:
   TrafficDataPortSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow all traffic through the data ports of Cloud One Network Security
+      GroupDescription: Allow all traffic through the data ports of Network Security
       VpcId: !Ref SecurityVpc
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
@@ -96,7 +96,7 @@ Resources:
   MgmtPortSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group for the Management ports of Cloud One Network Security
+      GroupDescription: Security Group for the Management ports of Network Security
       VpcId: !Ref SecurityVpc
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
