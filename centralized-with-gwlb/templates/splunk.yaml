@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
   # ------------------------------------------------------------#
@@ -66,44 +66,59 @@ Resources:
   # Create Lambda for VPC peering and modify route table
   # ------------------------------------------------------------#
   CreateVPCpeeringLambdaRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
-      Path: "/"
-      RoleName: !Sub ${AWS::StackName}-CreateVPCpeeringLambdaRole
+      Path: /
+      RoleName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-CreateVPCpeeringLambdaRole"
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       MaxSessionDuration: 3600
       ManagedPolicyArns: 
-      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      - !Ref CreateVPCpeeringLambdaPolicy
-    DependsOn: CreateVPCpeeringLambdaPolicy
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref CreateVPCpeeringLambdaPolicy
 
   CreateVPCpeeringLambdaPolicy:
-    Type: "AWS::IAM::ManagedPolicy"
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: !Sub ${AWS::StackName}-CreateVPCpeeringLambdaPolicy
-      Path: "/"
+      ManagedPolicyName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-CreateVPCpeeringLambdaPolicy"
+      Path: /
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Action:
-              - "ec2:DeleteTags"
-              - "ec2:AcceptVpcPeeringConnection"
-              - "ec2:DescribeVpcs"
-              - "ec2:CreateRoute"
-              - "ec2:DeleteVpcPeeringConnection"
-              - "ec2:CreateTags"
-              - "ec2:DescribeVpcPeeringConnections"
-              - "ec2:DeleteRoute"
-              - "ec2:CreateVpcPeeringConnection"
-              - "ec2:DescribeRouteTables"
+              - ec2:DeleteTags
+              - ec2:AcceptVpcPeeringConnection
+              - ec2:DescribeVpcs
+              - ec2:CreateRoute
+              - ec2:DeleteVpcPeeringConnection
+              - ec2:CreateTags
+              - ec2:DescribeVpcPeeringConnections
+              - ec2:DeleteRoute
+              - ec2:CreateVpcPeeringConnection
+              - ec2:DescribeRouteTables
             Resource: "*"
             Effect: Allow
 
@@ -250,7 +265,15 @@ Resources:
           VPCCIDR: !Ref VPCCIDR
           RTID: !Ref RTID
           STACKNAME: !Ref c1nsStackName
-      FunctionName: CreateVPCpeering-Function
+      FunctionName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-CreateVPCpeering-Function"
       Handler: index.lambda_handler
       MemorySize: 128
       Runtime: python3.7
@@ -265,9 +288,9 @@ Resources:
   # Create Splunk Instance
   # ------------------------------------------------------------#
   SplunkSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
+    Type: AWS::EC2::SecurityGroup
     Properties:
-        GroupDescription: " Security Group"
+        GroupDescription: Security Group
         VpcId: !Ref VPCID
         SecurityGroupIngress:
         - IpProtocol: tcp
@@ -294,7 +317,7 @@ Resources:
             VolumeType: gp3
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
-          DeviceIndex: "0"
+          DeviceIndex: 0
           GroupSet:
             - Ref: SplunkSecurityGroup
           SubnetId:
@@ -314,7 +337,7 @@ Resources:
 
 Outputs:
   SplunkURL:
-    Value: !Sub 'http://${Splunk.PublicDnsName}:8000'
+    Value: !Sub http://${Splunk.PublicDnsName}:8000
     Description: Splunk URL
   SplunkInternalIP:
     Value: !GetAtt Splunk.PrivateIp

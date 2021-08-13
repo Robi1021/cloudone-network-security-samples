@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
   # ------------------------------------------------------------#
@@ -95,104 +95,104 @@ Resources:
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref 'VPC'
-      CidrBlock: !Ref 'PublicSubnet1CIDR'
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet1CIDR
       AvailabilityZone: !Select
-        - '0'
-        - !Ref 'AvailabilityZones'
+        - 0
+        - !Ref AvailabilityZones
       Tags:
         - Key: Name
           Value: Public subnet 1
         - !If
           - PublicSubnetTag1Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag1'
+                - !Ref PublicSubnetTag1
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag1'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag1
+          - !Ref AWS::NoValue
         - !If
           - PublicSubnetTag2Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag2'
+                - !Ref PublicSubnetTag2
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag2'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag2
+          - !Ref AWS::NoValue
         - !If
           - PublicSubnetTag3Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag3'
+                - !Ref PublicSubnetTag3
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag3'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag3
+          - !Ref AWS::NoValue
       MapPublicIpOnLaunch: true
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref 'VPC'
-      CidrBlock: !Ref 'PublicSubnet2CIDR'
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet2CIDR
       AvailabilityZone: !Select
-        - '1'
-        - !Ref 'AvailabilityZones'
+        - 1
+        - !Ref AvailabilityZones
       Tags:
         - Key: Name
           Value: Public subnet 2
         - !If
           - PublicSubnetTag1Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag1'
+                - !Ref PublicSubnetTag1
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag1'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag1
+          - !Ref AWS::NoValue
         - !If
           - PublicSubnetTag2Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag2'
+                - !Ref PublicSubnetTag2
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag2'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag2
+          - !Ref AWS::NoValue
         - !If
           - PublicSubnetTag3Condition
           - Key: !Select
-              - '0'
+              - 0
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag3'
+                - !Ref PublicSubnetTag3
             Value: !Select
-              - '1'
+              - 1
               - !Split
                 - '='
-                - !Ref 'PublicSubnetTag3'
-          - !Ref 'AWS::NoValue'
+                - !Ref PublicSubnetTag3
+          - !Ref AWS::NoValue
       MapPublicIpOnLaunch: true
 
   # ------------------------------------------------------------#
@@ -201,40 +201,40 @@ Resources:
   PublicSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref 'VPC'
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
           Value: ForPublicSubnet1RouteTable
   PublicSubnet1Route:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref 'PublicSubnet1RouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
-      GatewayId: !Ref 'InternetGateway'
+      RouteTableId: !Ref PublicSubnet1RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
   PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref 'PublicSubnet1'
-      RouteTableId: !Ref 'PublicSubnet1RouteTable'
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicSubnet1RouteTable
 
   PublicSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref 'VPC'
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
           Value: ForPublicSubnet2RouteTable
   PublicSubnet2Route:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref 'PublicSubnet2RouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
-      GatewayId: !Ref 'InternetGateway'
+      RouteTableId: !Ref PublicSubnet2RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
   PublicSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref 'PublicSubnet2'
-      RouteTableId: !Ref 'PublicSubnet2RouteTable'
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicSubnet2RouteTable
 
   # ------------------------------------------------------------#
   # Create GWLB Endpoint
@@ -263,7 +263,7 @@ Resources:
   VIRRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref 'VPC'
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
           Value: ForVIRRouteTable
@@ -291,35 +291,50 @@ Resources:
   # Create Lambda for modify base route table
   # ------------------------------------------------------------#
   ModifyRouteTableLambdaRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
       Path: "/"
-      RoleName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaRole
+      RoleName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-ModifyRouteTableLambdaRole"
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       MaxSessionDuration: 3600
       ManagedPolicyArns: 
-      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      - !Ref ModifyRouteTableLambdaPolicy
-    DependsOn: ModifyRouteTableLambdaPolicy
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref ModifyRouteTableLambdaPolicy
 
   ModifyRouteTableLambdaPolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      ManagedPolicyName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaPolicy
-      Path: "/"
+      ManagedPolicyName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-ModifyRouteTableLambdaPolicy"
+      Path: /
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Action:
-              - "ec2:ReplaceRoute"
+              - ec2:ReplaceRoute
             Resource: "*"
             Effect: Allow
 
@@ -376,10 +391,18 @@ Resources:
           GWLBE1: !Ref GWLBEndopoint1
           RT2: !Ref BasePublicSubnet2RouteTable
           GWLBE2: !Ref GWLBEndopoint2
-      FunctionName: "ModifyRouteTable-Function"
-      Handler: "index.lambda_handler"
+      FunctionName: 
+        Fn::Join:
+          - ""
+          - - Fn::Select:
+              - 2
+              - Fn::Split:
+                - "-"
+                - !Ref AWS::StackName
+            - "-ModifyRouteTable-Function"
+      Handler: index.lambda_handler
       MemorySize: 128
-      Runtime: "python3.7"
+      Runtime: python3.7
       Timeout: 300
 
   ModifyRouteTable:
