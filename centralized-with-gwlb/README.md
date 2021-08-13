@@ -9,11 +9,11 @@
 *Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
 
 `https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/centralized-with-gwlb/Master.yaml`
-### 1. Deploy Cloud One Network Security with Centralized Security VPC
+### 1. Deploy Network Security with Centralized Security VPC
 The Quick Start offers two deployment options:
 
-- Deploying Cloud One Network Security with centralized security VPC without High Availability
-- Deploying Cloud One Network Security with centralized security VPC with High Availability
+- Deploying Network Security with centralized security VPC without High Availability
+- Deploying Network Security with centralized security VPC with High Availability
 
 Before proceeding to deploy the Quick Start, please create a new SSH key pair in the AWS region you will be deploying the Quick Start to.
 

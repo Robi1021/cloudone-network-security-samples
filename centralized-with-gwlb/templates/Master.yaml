@@ -239,7 +239,7 @@ Parameters:
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
   CloudOneAPIKEY:
-    Description: CloudOne API key you want to use.
+    Description: Trend Micro Cloud One API key you want to use.
     Type: String
     NoEcho: true
   InstanceType:
