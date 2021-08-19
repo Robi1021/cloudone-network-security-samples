@@ -50,10 +50,10 @@ Once Quick Start deployment is finished, Network Security Appliance is successfu
 5. Create TGW attachment between TGW and victim-private subnet
 6. Create TGW attachment between TGW and NSAwsConnectionSubnet in each AZ
 7. Delete all attachments and propogations on default route table for TGW
-8. Create TGW route tables as per instructions here: https://cloudone.trendmicro.com/docs/network-security/GWLB_CFdeploy2/
+8. Create TGW route tables as per instructions [here](https://cloudone.trendmicro.com/docs/network-security/GWLB_CFdeploy2/)
 9. Add following routes in each sanitized subnet route table:  
-   a. <attacker VPC CIDR> -> TGW
-   b. <victim VPC CIDR> -> TGW
+   a. attacker VPC CIDR -> TGW
+   b. victim VPC CIDR -> TGW
 10. Create a route table for attacker-private subnet. Add following route:
     a. 0.0.0.0/0 -> TGW
 11. Create a route table for attacker-public subnet, Add following route:
@@ -66,12 +66,12 @@ Once Quick Start deployment is finished, Network Security Appliance is successfu
 15. Create security group named "attacker" with following inbound rules:
     Type: SSH, Protocol: TCP, Port Range: 22, Source: 192.168.0.0/16
 16. Create security groups named "attacker-bastion" with following inbound rules:
-    Type: SSH, Protocol: TCP, Port Range: 22, Source: <your_public_ip>
+    Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
 17. Create security groups named "victim" with following inbound rules:
     Type: SSH, Protocol: TCP, Port Range: 22, Source: 172.16.0.0/16
     Type: HTTP, Protocol: TCP, Port Range: 80, Source: 192.168.0.0/16
 18. Create security groups named "victim-bastion" with following inbound rules:
-    Type: SSH, Protocol: TCP, Port Range: 22, Source: <your_public_ip>
+    Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
 19. Create attacker instance in attacker-private subnet. Select Amazon Linux 2 AMI. Attach attacker security group to it.
 20. Create victim instance in victim-private subnet. Select Amazon Linux 2 AMI.  Attach victim security group to it.
 21. Create attacker-bastion instance in attacker-public subnet, associate public IP. Select Amazon Linux 2 AMI. Attach attacker-bastion security group to it.
