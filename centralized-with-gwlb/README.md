@@ -15,7 +15,9 @@ The Quick Start offers two deployment options:
 - Deploying Network Security with centralized security VPC without High Availability
 - Deploying Network Security with centralized security VPC with High Availability
 
-Before proceeding to deploy the Quick Start, please create a new SSH key pair in the AWS region you will be deploying the Quick Start to.
+Following are pre-requisites that must be fulfilled before you could deploy the Quick Start:
+- Create a new SSH key pair in the AWS region you will be deploying the Quick Start
+- [Generate a CloudOne API Key](https://cloudone.trendmicro.com/docs/network-security/add_cloud_accounts_appliances/#generate-an-api-key)
 
 Below are the parameters for Quick Start:
 #### Quick Start Parameters

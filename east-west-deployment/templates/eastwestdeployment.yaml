@@ -59,7 +59,7 @@ Mappings:
     ap-northeast-2:
       AMI20211010892: ami-005e6020738377376
     ap-northeast-1:
-      AMI20211010892: ami-08e5175abb02d5de9
+      AMI20211010892: ami-05f01a6a414be9808
     sa-east-1:
       AMI20211010892: ami-0ab73ed665cffb7d6
     ca-central-1:
@@ -191,7 +191,7 @@ Resources:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicRtb
-      DestinationCidrBlock: 172.16.0.0/12
+      DestinationCidrBlock: 172.16.0.0/16
       NetworkInterfaceId: !Ref IPSAPort
   Cidr192Route:
     Type: AWS::EC2::Route
