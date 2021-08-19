@@ -46,46 +46,48 @@ Parameters:
     Type: String
 Mappings:
   AWSAMIRegionMap:
-    eu-north-1:
-      AMI20211010892: ami-09089e84e8e26b64f
-    ap-south-1:
-      AMI20211010892: ami-0bb4faee68f7cbd25
-    eu-west-3:
-      AMI20211010892: ami-0fb4e9d876c36201a
-    eu-west-2:
-      AMI20211010892: ami-078002c3f6368bb77
-    eu-west-1:
-      AMI20211010892: ami-0cedee39d915786e1
-    ap-northeast-2:
-      AMI20211010892: ami-005e6020738377376
-    ap-northeast-1:
-      AMI20211010892: ami-05f01a6a414be9808
-    sa-east-1:
-      AMI20211010892: ami-0ab73ed665cffb7d6
-    ca-central-1:
-      AMI20211010892: ami-022001f988b8a9227
-    ap-southeast-1:
-      AMI20211010892: ami-08b0f4618d0956792
-    ap-southeast-2:
-      AMI20211010892: ami-05961fff788e1dc0d
-    eu-central-1:
-      AMI20211010892: ami-0725b9b08a742cfe0
+    # IPS_AMI--2021.7.0.11129
     us-east-1:
-      AMI20211010892: ami-074fec2cbfc62745e
+      ImageId: ami-0c55b11b8c1850074
     us-east-2:
-      AMI20211010892: ami-03425659d433ea538
+      ImageId: ami-049ac6c43ccc0eb59
     us-west-1:
-      AMI20211010892: ami-0346f9bbf24feece4
+      ImageId: ami-0c61fb7ad31615bc9
     us-west-2:
-      AMI20211010892: ami-00afd4ee7f1101134
+      ImageId: ami-0abee844f98a90719
     af-south1:
-      AMI20211010892: ami-0a6bfd7a0f93a4943
+      ImageId: ami-07beb2f931b25bac4
     ap-east-1:
-      AMI20211010892: ami-0eef4c54b43719b15
-    me-south-1:
-      AMI20211010892: ami-036c40a2988da6da7
+      ImageId: ami-0eef4c54b43719b15
+    ap-south-1:
+      ImageId: ami-0bb4faee68f7cbd25
+    ap-northeast-2:
+      ImageId: ami-06835923fab139b98
+    ap-northeast-1:
+      ImageId: ami-05f01a6a414be9808
+    ap-southeast-1:
+      ImageId: ami-08c9d7bc95ea77e79
+    ap-southeast-2:
+      ImageId: ami-095df8b8ec0e0aac5
+    ca-central-1:
+      ImageId: ami-0c1c1a2c0b54eea1e
+    eu-north-1:
+      ImageId: ami-0c3ba132507949f56
+    eu-west-3:
+      ImageId: ami-02c47030c3e886b4f
+    eu-west-2:
+      ImageId: ami-062e147780edfffc4
+    eu-west-1:
+      ImageId: ami-0c0a077459b3222d9
+    eu-central-1:
+      ImageId: ami-039d4a40e711415db
     eu-south-1:
-      AMI20211010892: ami-001fe5ed24c292c15
+      ImageId: ami-001fe5ed24c292c15
+    me-south-1:
+      ImageId: ami-036c40a2988da6da7
+    sa-east-1:
+      ImageId: ami-0edc19454ec876784
+
 Resources:
   AwsConnectionSubnet:
     Type: AWS::EC2::Subnet
@@ -339,7 +341,7 @@ Resources:
       ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref 'AWS::Region'
-        - AMI20211010892
+        - ImageId
       InstanceType: !Ref 'IpsInstanceType'
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref NetworkSecurityInstanceProfile
