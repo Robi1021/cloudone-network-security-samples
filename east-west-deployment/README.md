@@ -36,10 +36,10 @@ Below are the parameters for Quick Start:
 Once Quick Start deployment is finished, Network Security Appliance is successfully registered with Cloud One Network Security. However, appliance is not inspecting any traffic at the moment since there are no workload VPCs connected to it. Below are additional steps to setup a victim and an attacker VPC.
 
 1. Create attacker VPC with following:
-   a. VPC CIDR: 192.168.0.0/16
-   b. attacker-private subnet CIDR: 192.168.0.0/24
-   c. attacker-public subnet CIDR: 192.168.1.0/24
-   d. Internet Gateway attached to VPC
+   * VPC CIDR: 192.168.0.0/16
+   * attacker-private subnet CIDR: 192.168.0.0/24
+   * attacker-public subnet CIDR: 192.168.1.0/24
+   * Internet Gateway attached to VPC
 2. Create victim VPC with following:
    a. VPC CIDR: 172.16.0.0/16
    b. victim-private subnet CIDR: 172.16.0.0/24
