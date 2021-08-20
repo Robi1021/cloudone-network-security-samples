@@ -10,7 +10,7 @@
 
 `https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/east-west-deployment/templates/main.yaml`
 ### 1. Deploy Network Security East West Outbound Only Inspection
-The Quick Start deploys Security VPC for East West Outbound Only inspection in multiple AZs using Transit Gateways. Users are expected to deploy to attacker and victim VPCs manually (instructions are given below)
+The Quick Start deploys Security VPC for East West Outbound Only inspection in multiple AZs using Transit Gateways. Users are expected to deploy attacker and victim VPCs manually (instructions are given below)
 
 Following are pre-requisites that must be fulfilled before you could deploy the Quick Start:
 - Create a new SSH key pair in the AWS region you will be deploying the Quick Start
@@ -25,13 +25,13 @@ Below are the parameters for Quick Start:
 | IpsInstanceType    | c5n.4xlarge  | AWS EC2 IPS instance type |
 | KeyPairName | None | SSH Key to access instances |
 | VpcCidr    | 10.0.0.0/24 | CIDR for the Security VPC. Each Availability Zone uses a /25 CIDR |
-| ApiKey    | None  Availability Zones to use. Each uses a /25 subnet of the VPC |
+| ApiKey    | None | CloudOne API key you want to use |
 | AvailabilityZones  | None | Availability Zones to use. Each uses a /25 subnet of the VPC |
 | NumAvailabilityZones    | 2 | Number of Availability Zones chosen - to help with CloudFormation. Each uses a /25 CIDR and an Elastic IP |
 | QSS3BucketName    | quickstart-ns-edge-deployment | S3 bucket name for the Quick Start assets |
 | QSS3KeyPrefix    | east-west/ | S3 key prefix for the Quick Start assets |
 
-### 1. Deploy Victim, Attacker VPC and Transit Gateway
+### 2. Deploy Victim, Attacker VPC and Transit Gateway
 
 Once Quick Start deployment is finished, Network Security Appliance is successfully registered with Cloud One Network Security. However, appliance is not inspecting any traffic at the moment since there are no workload VPCs connected to it. Below are additional steps to setup a victim and an attacker VPC.
 
@@ -55,12 +55,12 @@ Once Quick Start deployment is finished, Network Security Appliance is successfu
    * attacker VPC CIDR -> TGW
    * victim VPC CIDR -> TGW
 10. Create a route table for attacker-private subnet. Add following route:
-   * 0.0.0.0/0 -> TGW
+    * 0.0.0.0/0 -> TGW
 11. Create a route table for attacker-public subnet, Add following route:
     * 0.0.0.0/0 -> IGW
-12. Create a route table for victim private subnet, Add following route:
+12. Create a route table for victim-private subnet, Add following route:
     * 0.0.0.0/0 -> TGW
-13. Create a route table for victim public subnet, Add following route:
+13. Create a route table for victim-public subnet, Add following route:
     * 0.0.0.0/0 -> IGW
 14. Associate private and public route tables to respective private and public subnets
 15. Create security group named "attacker" with following inbound rules:
