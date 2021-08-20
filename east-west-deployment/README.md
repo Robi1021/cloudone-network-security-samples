@@ -63,13 +63,12 @@ Once Quick Start deployment is finished, Network Security Appliance is successfu
 13. Create a route table for victim-public subnet, Add following route:
     * 0.0.0.0/0 -> IGW
 14. Associate private and public route tables to respective private and public subnets
-15. Create security group named "attacker" with following inbound rules:
-    
+15. Create security group named "attacker" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: 192.168.0.0/16
 16. Create security groups named "attacker-bastion" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
 17. Create security groups named "victim" with following inbound rules:  
-    Type: SSH, Protocol: TCP, Port Range: 22, Source: 172.16.0.0/16
+    Type: SSH, Protocol: TCP, Port Range: 22, Source: 172.16.0.0/16  
     Type: HTTP, Protocol: TCP, Port Range: 80, Source: 192.168.0.0/16
 18. Create security groups named "victim-bastion" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
