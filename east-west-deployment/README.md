@@ -66,13 +66,12 @@ Once Quick Start deployment is finished, Network Security Appliance is successfu
 15. Create security group named "attacker" with following inbound rules:
     
     Type: SSH, Protocol: TCP, Port Range: 22, Source: 192.168.0.0/16
-16. Create security groups named "attacker-bastion" with following inbound rules:
-    
+16. Create security groups named "attacker-bastion" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
-17. Create security groups named "victim" with following inbound rules:
+17. Create security groups named "victim" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: 172.16.0.0/16
     Type: HTTP, Protocol: TCP, Port Range: 80, Source: 192.168.0.0/16
-18. Create security groups named "victim-bastion" with following inbound rules:
+18. Create security groups named "victim-bastion" with following inbound rules:  
     Type: SSH, Protocol: TCP, Port Range: 22, Source: your_public_ip
 19. Create attacker instance in attacker-private subnet. Select Amazon Linux 2 AMI. Attach attacker security group to it.
 20. Create victim instance in victim-private subnet. Select Amazon Linux 2 AMI.  Attach victim security group to it.
