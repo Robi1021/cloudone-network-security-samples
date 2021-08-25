@@ -313,7 +313,7 @@ Resources:
   # ------------------------------------------------------------#
   # Create Base VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
   # ------------------------------------------------------------#
-  BaseVPC:
+  VictimVpc:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
@@ -339,20 +339,20 @@ Resources:
       Parameters:
         DVWAInstanceType: !Ref DVWAInstanceType
         KeyPairName: !Ref sshKeyPairName
-        PublicSubnet1ID: !GetAtt BaseVPC.Outputs.PublicSubnet1ID
+        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
         QSS3BucketName: !Ref BucketName
         QSS3KeyPrefix: !Ref BucketPrefix
         DVWARemoteAccessCIDR: !Ref AllowIP
         QSS3BucketRegion: !Ref BucketRegion
-        VPCID: !GetAtt BaseVPC.Outputs.VPCID
+        VPCID: !GetAtt VictimVpc.Outputs.VPCID
 
   # ------------------------------------------------------------#
   # Create Base Site (EC2, SecurityGroup)
   # ------------------------------------------------------------#
-  BaseSite:
+  Victim:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/Victim.yaml
       Parameters:
         ImageId: !FindInMap
           - RegionMap
@@ -360,10 +360,10 @@ Resources:
           - ImageId
         AllowIP: !Ref AllowIP
         NeedSSMAccess: !Ref SSMAccess
-        VPCId: !GetAtt BaseVPC.Outputs.VPCID
-        PrivateSubnet1ID: !GetAtt BaseVPC.Outputs.PrivateSubnet1AID
-        PublicSubnet1ID: !GetAtt BaseVPC.Outputs.PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt BaseVPC.Outputs.PublicSubnet2ID
+        VPCId: !GetAtt VictimVpc.Outputs.VPCID
+        PrivateSubnet1ID: !GetAtt VictimVpc.Outputs.PrivateSubnet1AID
+        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
+        PublicSubnet2ID: !GetAtt VictimVpc.Outputs.PublicSubnet2ID
 
   # ------------------------------------------------------------#
   # Create LoadBalancer and https site (ALB, TargetGroup, Listener, ACM)
@@ -377,10 +377,10 @@ Resources:
         DomainName: !Ref DomainName
         SubDomain: !Ref SubDomain
         HostZoneID: !Ref HostZoneID
-        TargetGroupID: !GetAtt BaseSite.Outputs.TargetGroupID
-        ALBID: !GetAtt BaseSite.Outputs.ALBID
-        HostedZoneId: !GetAtt BaseSite.Outputs.HostedZoneId
-        DNSName: !GetAtt BaseSite.Outputs.HTTPWebSiteURL
+        TargetGroupID: !GetAtt Victim.Outputs.TargetGroupID
+        ALBID: !GetAtt Victim.Outputs.ALBID
+        HostedZoneId: !GetAtt Victim.Outputs.HostedZoneId
+        DNSName: !GetAtt Victim.Outputs.HTTPWebSiteURL
 
   # ------------------------------------------------------------#
   # Create RemoveRecord Function
@@ -471,12 +471,12 @@ Resources:
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
-        VPC: !GetAtt BaseVPC.Outputs.VPCID
-        InternetGateway: !GetAtt BaseVPC.Outputs.IGWID
-        BasePublicSubnet1CIDR: !GetAtt BaseVPC.Outputs.PublicSubnet1CIDR
-        BasePublicSubnet2CIDR: !GetAtt BaseVPC.Outputs.PublicSubnet2CIDR
-        BasePublicSubnet1RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet1RouteTable
-        BasePublicSubnet2RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet2RouteTable
+        VPC: !GetAtt VictimVpc.Outputs.VPCID
+        InternetGateway: !GetAtt VictimVpc.Outputs.IGWID
+        BasePublicSubnet1CIDR: !GetAtt VictimVpc.Outputs.PublicSubnet1CIDR
+        BasePublicSubnet2CIDR: !GetAtt VictimVpc.Outputs.PublicSubnet2CIDR
+        BasePublicSubnet1RouteTable: !GetAtt VictimVpc.Outputs.PublicSubnet1RouteTable
+        BasePublicSubnet2RouteTable: !GetAtt VictimVpc.Outputs.PublicSubnet2RouteTable
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
         AvailabilityZones:
           Fn::Join:
@@ -497,8 +497,8 @@ Resources:
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/splunk.yaml
       Parameters:
-        VPCID: !GetAtt BaseVPC.Outputs.VPCID
-        VPCCIDR: !GetAtt BaseVPC.Outputs.VPCCIDR
+        VPCID: !GetAtt VictimVpc.Outputs.VPCID
+        VPCCIDR: !GetAtt VictimVpc.Outputs.VPCCIDR
         RTID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1Route
         AllowIP: !Ref AllowIP
         SyslogPort: !Ref SyslogPort
@@ -516,7 +516,7 @@ Resources:
             - Fn::Split:
               - /
               - !Ref c1nsSecurityVPCTemplate
-        InstanceProfile: !GetAtt BaseSite.Outputs.InstanceProfile
+        InstanceProfile: !GetAtt Victim.Outputs.InstanceProfile
         NeedSSMAccess: !Ref SSMAccess
 
 # ------------------------------------------------------------#
@@ -524,7 +524,7 @@ Resources:
 # ------------------------------------------------------------#
 Outputs:
   HTTPWebSiteURL:
-    Value: !GetAtt BaseSite.Outputs.HTTPWebSiteURL
+    Value: !GetAtt Victim.Outputs.HTTPWebSiteURL
     Description: HTTP site URL
   HTTPSWebSiteURL:
     Condition: DeployHTTPS
