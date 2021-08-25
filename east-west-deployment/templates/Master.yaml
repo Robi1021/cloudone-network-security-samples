@@ -311,7 +311,7 @@ Conditions:
 
 Resources:
   # ------------------------------------------------------------#
-  # Create Base VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
+  # Create Victim VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
   # ------------------------------------------------------------#
   VictimVpc:
     Type: AWS::CloudFormation::Stack
@@ -347,12 +347,12 @@ Resources:
         VPCID: !GetAtt VictimVpc.Outputs.VPCID
 
   # ------------------------------------------------------------#
-  # Create Base Site (EC2, SecurityGroup)
+  # Create Victim Site (EC2, SecurityGroup)
   # ------------------------------------------------------------#
   Victim:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/Victim.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
       Parameters:
         ImageId: !FindInMap
           - RegionMap
@@ -365,6 +365,44 @@ Resources:
         PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
         PublicSubnet2ID: !GetAtt VictimVpc.Outputs.PublicSubnet2ID
 
+  # ------------------------------------------------------------#
+  # Create Attacker VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
+  # ------------------------------------------------------------#
+  AttackerVpc:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
+      Parameters:
+        NumberOfAZs: 2
+        AvailabilityZones:
+          Fn::Join:
+            - ","
+            - - Fn::Select: 
+                - 0
+                - Fn::GetAZs: !Ref AWS::Region
+              - Fn::Select: 
+                - 1
+                - Fn::GetAZs: !Ref AWS::Region
+
+  # ------------------------------------------------------------#
+  # Create Attacker Site (EC2, SecurityGroup)
+  # ------------------------------------------------------------#
+  Attacker:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
+      Parameters:
+        ImageId: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - ImageId
+        AllowIP: !Ref AllowIP
+        NeedSSMAccess: !Ref SSMAccess
+        VPCId: !GetAtt AttackerVpc.Outputs.VPCID
+        PrivateSubnet1ID: !GetAtt AttackerVpc.Outputs.PrivateSubnet1AID
+        PublicSubnet1ID: !GetAtt AttackerVpc.Outputs.PublicSubnet1ID
+        PublicSubnet2ID: !GetAtt AttackerVpc.Outputs.PublicSubnet2ID
+  
   # ------------------------------------------------------------#
   # Create LoadBalancer and https site (ALB, TargetGroup, Listener, ACM)
   # ------------------------------------------------------------#
