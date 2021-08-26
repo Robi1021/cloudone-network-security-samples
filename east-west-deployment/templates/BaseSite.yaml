@@ -23,6 +23,9 @@ Parameters:
   PrivateSubnet1ID:
     Description: Enter the Private Subnet ID where you want to deploy the EC2 instance.
     Type: String
+  WebServerIngressAllowCIDR:
+    Description: CIDR from where webserver should be accessible
+    Type: String
     
 # ------------------------------------------------------------#
 # Conditions
@@ -125,12 +128,7 @@ Resources:
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref ALBSecurityGroup
-        - 
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          SourceSecurityGroupId: !Ref WebServerIngressAllowCIDR
       Tags:
         - Key: Name
           Value: 

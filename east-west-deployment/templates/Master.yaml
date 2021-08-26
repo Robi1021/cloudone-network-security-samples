@@ -268,24 +268,6 @@ Resources:
               - Fn::Select: 
                 - 1
                 - Fn::GetAZs: !Ref AWS::Region
-
-  # ------------------------------------------------------------#
-  # Create DVWA (DVWA Instance)
-  # ------------------------------------------------------------#
-  DVWA:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
-      Parameters:
-        DVWAInstanceType: !Ref DVWAInstanceType
-        KeyPairName: !Ref sshKeyPairName
-        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
-        QSS3BucketName: !Ref BucketName
-        QSS3KeyPrefix: !Ref BucketPrefix
-        DVWARemoteAccessCIDR: !Ref AllowIP
-        QSS3BucketRegion: !Ref BucketRegion
-        VPCID: !GetAtt VictimVpc.Outputs.VPCID
-
   # ------------------------------------------------------------#
   # Create Victim Site (EC2, SecurityGroup)
   # ------------------------------------------------------------#
@@ -302,7 +284,23 @@ Resources:
         NeedSSMAccess: !Ref SSMAccess
         VPCId: !GetAtt VictimVpc.Outputs.VPCID
         PrivateSubnet1ID: !GetAtt VictimVpc.Outputs.PrivateSubnet1AID
-
+        WebServerIngressAllowCIDR: 172.16.0.0/16
+  # ------------------------------------------------------------#
+  # Create DVWA (DVWA Instance)
+  # ------------------------------------------------------------#
+  DVWA:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
+      Parameters:
+        DVWAInstanceType: !Ref DVWAInstanceType
+        KeyPairName: !Ref sshKeyPairName
+        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
+        QSS3BucketName: !Ref BucketName
+        QSS3KeyPrefix: !Ref BucketPrefix
+        DVWARemoteAccessCIDR: !Ref AllowIP
+        QSS3BucketRegion: !Ref BucketRegion
+        VPCID: !GetAtt VictimVpc.Outputs.VPCID
   # ------------------------------------------------------------#
   # Create Attacker VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
   # ------------------------------------------------------------#
@@ -343,6 +341,7 @@ Resources:
         NeedSSMAccess: !Ref SSMAccess
         VPCId: !GetAtt AttackerVpc.Outputs.VPCID
         PrivateSubnet1ID: !GetAtt AttackerVpc.Outputs.PrivateSubnet1AID
+        WebServerIngressAllowCIDR: 192.168.0.0/16
   
   # ------------------------------------------------------------#
   # Create c1ns macro template
