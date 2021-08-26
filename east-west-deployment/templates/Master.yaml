@@ -302,8 +302,6 @@ Resources:
         NeedSSMAccess: !Ref SSMAccess
         VPCId: !GetAtt VictimVpc.Outputs.VPCID
         PrivateSubnet1ID: !GetAtt VictimVpc.Outputs.PrivateSubnet1AID
-        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt VictimVpc.Outputs.PublicSubnet2ID
 
   # ------------------------------------------------------------#
   # Create Attacker VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
@@ -345,8 +343,6 @@ Resources:
         NeedSSMAccess: !Ref SSMAccess
         VPCId: !GetAtt AttackerVpc.Outputs.VPCID
         PrivateSubnet1ID: !GetAtt AttackerVpc.Outputs.PrivateSubnet1AID
-        PublicSubnet1ID: !GetAtt AttackerVpc.Outputs.PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt AttackerVpc.Outputs.PublicSubnet2ID
   
   # ------------------------------------------------------------#
   # Create c1ns macro template
