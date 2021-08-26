@@ -115,17 +115,8 @@ Metadata:
           - DVWAInstanceType
           - sshKeyPairName
           - SSMAccess
-          - DeployHTTPS
           - DeployC1NS
           - DeployC1NSHA
-          - DeploySplunk
-      - 
-        Label:
-          default: If you set the DeployHTTPS parameter to true, the following parameters are required
-        Parameters:
-          - DomainName
-          - SubDomain
-          - HostZoneID
       - 
         Label:
           default: If you set the DeployC1NS parameter to true, the following parameters are required
@@ -135,13 +126,6 @@ Metadata:
           - SecurityVPCCIDR
           - NsvaCountPerAz
           - EnableInspectionLogs
-      - 
-        Label:
-          default: If you set the DeploySplunk parameter to true, the following parameters are required
-        Parameters:
-          - SyslogPort
-          - SplunkPassword
-          - SplunkVersion
 
 Parameters:
   # ------------------------------------------------------------#
@@ -160,7 +144,7 @@ Parameters:
   BucketPrefix:
     Description: Bucket prefix
     Type: String
-    Default: 'centralized-with-gwlb/'
+    Default: 'east-west-deployment/'
   BucketRegion:
     Description: Bucket region
     Type: String
@@ -200,11 +184,6 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
     Default: true
-  DeployHTTPS:
-    Description: If enabled, The HTTPS site will be deployed.
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
   DeployC1NS:
     Description: If enabled, C1NS with be deployed in centralized Security VPC
     Type: String
@@ -215,26 +194,6 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
     Default: false
-  DeploySplunk:
-    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed."
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
-  # ------------------------------------------------------------#
-  # If you set the DeployHTTPS parameter to true, the following parameters are required
-  # ------------------------------------------------------------#
-  DomainName:
-    Description: Domain name to be used for the website.
-    Type: String
-    Default: ''
-  SubDomain:
-    Description: Subdomain to be used for the ALB.
-    Type: String
-    Default: ''
-  HostZoneID:
-    Description: ID of the HostZone where the domain you want to use is registered.
-    Type: String
-    Default: ''
   # ------------------------------------------------------------#
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
@@ -258,7 +217,7 @@ Parameters:
     Type: String
     AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-6]))$"
     ConstraintDescription: "CIDR block parameter must be in the form x.x.x.x/16-26"
-    Default: "10.10.10.0/16"
+    Default: "10.0.0.0/16"
   NsvaCountPerAz:
     Description: Number of NSVA instances to be deployed in the AZ.
     Type: Number
@@ -273,29 +232,10 @@ Parameters:
     Type: String
     AllowedValues: [ true, false ]
     Default: false
-  # ------------------------------------------------------------#
-  # If you set the DeploySplunk parameter to true, the following parameters are required
-  # ------------------------------------------------------------#
-  SyslogPort:
-    Description: Port number used by Splunk Server
-    Type: String
-    Default: '5140'
-  SplunkPassword:
-    Description: Password used by Splunk Server
-    Type: String
-    NoEcho: true
-    Default: ''
-  SplunkVersion:
-    Description: Splunk Version
-    Type: String
-    Default: '8.2'
-
 # ------------------------------------------------------------#
 # Conditions
 # ------------------------------------------------------------#
 Conditions:
-  DeployHTTPS:
-    !Equals [true, !Ref DeployHTTPS]
   DeployC1NS:
     !Equals [true, !Ref DeployC1NS]
   DeployC1NSHAmodel:
@@ -303,11 +243,6 @@ Conditions:
   DeployC1NSHA: !And
     - !Condition DeployC1NS
     - !Condition DeployC1NSHAmodel
-  DeploySplunksrv:
-    !Equals [true, !Ref DeploySplunk]
-  DeploySplunk: !And
-    - !Condition DeployC1NS
-    - !Condition DeploySplunksrv
 
 Resources:
   # ------------------------------------------------------------#
@@ -318,6 +253,11 @@ Resources:
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
       Parameters:
+        VPCCIDR: 192.168.0.0/16
+        PrivateSubnet1ACIDR: 192.168.1.0/24
+        PrivateSubnet2ACIDR: 192.168.2.0/24 
+        PublicSubnet1CIDR: 192.168.11.0/24
+        PublicSubnet2CIDR: 192.168.12.0/24
         NumberOfAZs: 2
         AvailabilityZones:
           Fn::Join:
@@ -373,6 +313,11 @@ Resources:
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
       Parameters:
+        VPCCIDR: 172.16.0.0/16
+        PrivateSubnet1ACIDR: 172.16.1.0/24
+        PrivateSubnet2ACIDR: 172.16.2.0/24 
+        PublicSubnet1CIDR: 172.16.11.0/24
+        PublicSubnet2CIDR: 172.16.12.0/24
         NumberOfAZs: 2
         AvailabilityZones:
           Fn::Join:
@@ -403,34 +348,6 @@ Resources:
         PublicSubnet1ID: !GetAtt AttackerVpc.Outputs.PublicSubnet1ID
         PublicSubnet2ID: !GetAtt AttackerVpc.Outputs.PublicSubnet2ID
   
-  # ------------------------------------------------------------#
-  # Create LoadBalancer and https site (ALB, TargetGroup, Listener, ACM)
-  # ------------------------------------------------------------#
-  AddALB:
-    Condition: DeployHTTPS
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/AddALB.yaml
-      Parameters:
-        DomainName: !Ref DomainName
-        SubDomain: !Ref SubDomain
-        HostZoneID: !Ref HostZoneID
-        TargetGroupID: !GetAtt Victim.Outputs.TargetGroupID
-        ALBID: !GetAtt Victim.Outputs.ALBID
-        HostedZoneId: !GetAtt Victim.Outputs.HostedZoneId
-        DNSName: !GetAtt Victim.Outputs.HTTPWebSiteURL
-
-  # ------------------------------------------------------------#
-  # Create RemoveRecord Function
-  # ------------------------------------------------------------#
-  RemoveRecord:
-    Condition: DeployHTTPS
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/RemoveRecord.yaml
-      Parameters:
-        HostZoneID: !Ref HostZoneID
-
   # ------------------------------------------------------------#
   # Create c1ns macro template
   # ------------------------------------------------------------#
@@ -526,37 +443,6 @@ Resources:
                 - 1
                 - Fn::GetAZs: !Ref AWS::Region
 
-  # ------------------------------------------------------------#
-  # Create Splunk Server
-  # ------------------------------------------------------------#
-  SplunkTemplate:
-    Condition: DeploySplunk
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/splunk.yaml
-      Parameters:
-        VPCID: !GetAtt VictimVpc.Outputs.VPCID
-        VPCCIDR: !GetAtt VictimVpc.Outputs.VPCCIDR
-        RTID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1Route
-        AllowIP: !Ref AllowIP
-        SyslogPort: !Ref SyslogPort
-        SecurityVPCCIDR: !Ref SecurityVPCCIDR
-        ImageId: !FindInMap
-          - RegionMap
-          - !Ref 'AWS::Region'
-          - ImageId
-        PublicSubnet1ID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1ID
-        SplunkPassword: !Ref SplunkPassword
-        SplunkVersion: !Ref SplunkVersion
-        c1nsStackName: 
-          Fn::Select:
-            - 1
-            - Fn::Split:
-              - /
-              - !Ref c1nsSecurityVPCTemplate
-        InstanceProfile: !GetAtt Victim.Outputs.InstanceProfile
-        NeedSSMAccess: !Ref SSMAccess
-
 # ------------------------------------------------------------#
 # Output Site URLs
 # ------------------------------------------------------------#
@@ -564,18 +450,6 @@ Outputs:
   HTTPWebSiteURL:
     Value: !GetAtt Victim.Outputs.HTTPWebSiteURL
     Description: HTTP site URL
-  HTTPSWebSiteURL:
-    Condition: DeployHTTPS
-    Value: !GetAtt AddALB.Outputs.HTTPSWebSiteURL
-    Description: HTTPS site URL
-  SplunkURL:
-    Condition: DeploySplunk
-    Value: !GetAtt SplunkTemplate.Outputs.SplunkURL
-    Description: Splunk URL
-  SplunkInternalIP:
-    Condition: DeploySplunk
-    Value: !GetAtt SplunkTemplate.Outputs.SplunkInternalIP
-    Description: Splunk private IP address  
   DVWAIP:
     Value: !GetAtt DVWA.Outputs.DVWAPublicIP
     Description: DVWA instance Public IP 
