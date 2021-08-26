@@ -128,7 +128,7 @@ Resources:
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref WebServerIngressAllowCIDR
+          CidrIp: !Ref WebServerIngressAllowCIDR
       Tags:
         - Key: Name
           Value: 
