@@ -23,12 +23,6 @@ Parameters:
   PrivateSubnet1ID:
     Description: Enter the Private Subnet ID where you want to deploy the EC2 instance.
     Type: String
-  PublicSubnet1ID:
-    Description: Enter the Public Subnet ID where you want to deploy the ALB
-    Type: String
-  PublicSubnet2ID:
-    Description: Enter the Public Subnet ID where you want to deploy the ALB
-    Type: String
     
 # ------------------------------------------------------------#
 # Conditions
@@ -110,7 +104,7 @@ Resources:
           systemctl enable nginx
 
   # ------------------------------------------------------------#
-  # Create 2 Security Group for EC2 Instance and ALB
+  # Create 2 Security Group for EC2 Instance
   # ------------------------------------------------------------#
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -148,127 +142,11 @@ Resources:
                     - "-"
                     - !Ref AWS::StackName
                 - "-EC2-SG"
-  ALBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-ALB-SG"
-      GroupDescription: Used ALB
-      VpcId: !Ref VPCId
-      SecurityGroupIngress:
-        - 
-          IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: !Ref AllowIP
-        - 
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: !Ref AllowIP
-      Tags:
-        - Key: Name
-          Value:
-            Fn::Join:
-              - ""
-              - - Fn::Select:
-                  - 2
-                  - Fn::Split:
-                    - "-"
-                    - !Ref AWS::StackName
-                - "-ALB-SG"
-
-  # ------------------------------------------------------------#
-  # Create ALB (Only HTTP)
-  # ------------------------------------------------------------#
-  TargetGroup: 
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties: 
-      VpcId: !Ref VPCId
-      Name: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-TG"
-      Protocol: HTTP
-      Port: 80
-      HealthCheckProtocol: HTTP
-      HealthCheckPath: "/"
-      HealthCheckPort: "traffic-port"
-      HealthyThresholdCount: 5
-      UnhealthyThresholdCount: 2
-      HealthCheckTimeoutSeconds: 5
-      HealthCheckIntervalSeconds: 30
-      Matcher: 
-        HttpCode: 200
-      Targets: 
-        - Id: !Ref EC2Instance
-          Port: 80
-  InternetALB: 
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties: 
-      Name: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-ALB"
-      Scheme: internet-facing
-      LoadBalancerAttributes: 
-        - Key: deletion_protection.enabled
-          Value: false
-        - Key: idle_timeout.timeout_seconds
-          Value: 4000
-      SecurityGroups:
-        - !Ref ALBSecurityGroup
-      Subnets: 
-        - !Ref PublicSubnet1ID
-        - !Ref PublicSubnet2ID
-  ALBListenerHTTP: 
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties: 
-      Port: 80
-      Protocol: HTTP
-      DefaultActions: 
-        - TargetGroupArn: !Ref TargetGroup
-          Type: forward
-#        - Type: redirect
-#          RedirectConfig: 
-#            Host: '#{host}'
-#            Path: '/#{path}'
-#            Port: 443
-#            Protocol: HTTPS
-#            Query: '#{query}'
-#            StatusCode: HTTP_301
-      LoadBalancerArn: !Ref InternetALB
 
 Outputs:
-  TargetGroupID:
-    Value: !Ref TargetGroup
-    Description: Target group ID of ALB
-  ALBID:
-    Value: !Ref InternetALB
-    Description: ID of ALB
-  HTTPWebSiteURL:
-    Value: !GetAtt InternetALB.DNSName
-    Description: URL to access the web server (HTTP)
-  HostedZoneId:
-    Value: !GetAtt InternetALB.CanonicalHostedZoneID
-    Description: Hosted Zone ID of ALB
+  WebServerIP:
+    Description: Webserver IP
+    Value: !GetAtt EC2Instance.PrivateIp
   InstanceProfile:
     Condition: NeedSSM
     Value: !Ref InstanceProfile

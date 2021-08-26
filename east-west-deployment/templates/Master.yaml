@@ -447,12 +447,15 @@ Resources:
 # Output Site URLs
 # ------------------------------------------------------------#
 Outputs:
-  HTTPWebSiteURL:
-    Value: !GetAtt Victim.Outputs.HTTPWebSiteURL
-    Description: HTTP site URL
+  AttackerWebServerIP:
+    Value: !GetAtt Attacker.Outputs.WebServerIP
+    Description: Attacker Webserver IP
+  VictimWebServerIP:
+    Value: !GetAtt Victim.Outputs.WebServerIP
+    Description: Victim Webserver IP
   DVWAIP:
     Value: !GetAtt DVWA.Outputs.DVWAPublicIP
     Description: DVWA instance Public IP 
   DVWADeployment:
     Value: !GetAtt DVWA.Outputs.Postdeployment
-    Description: See the deployment guide for post-deployment steps 
+    Description: See the deployment guide for post-deployment steps
