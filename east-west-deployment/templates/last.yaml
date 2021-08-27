@@ -22,56 +22,6 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.10.202.0/24
-  GWLBEndpointSubnetTag1:
-    Description: tag to add to GWLB subnets, in format Key=Value (Optional)
-    Type: String
-    AllowedPattern: ^([a-zA-Z0-9+\-._:/@]+=[a-zA-Z0-9+\-.,_:/@ *\\"'\[\]\{\}]*)?$
-    ConstraintDescription: tags must be in format "Key=Value" keys can only contain
-      [a-zA-Z0-9+\-._:/@], values can contain [a-zA-Z0-9+\-._:/@ *\\"'\[\]\{\}]
-    Default: Network=Public
-  GWLBEndpointSubnetTag2:
-    Description: tag to add to GWLB subnets, in format Key=Value (Optional)
-    Type: String
-    AllowedPattern: ^([a-zA-Z0-9+\-._:/@]+=[a-zA-Z0-9+\-.,_:/@ *\\"'\[\]\{\}]*)?$
-    ConstraintDescription: tags must be in format "Key=Value" keys can only contain
-      [a-zA-Z0-9+\-._:/@], values can contain [a-zA-Z0-9+\-._:/@ *\\"'\[\]\{\}]
-    Default: ''
-  GWLBEndpointSubnetTag3:
-    Description: tag to add to GWLB subnets, in format Key=Value (Optional)
-    Type: String
-    AllowedPattern: ^([a-zA-Z0-9+\-._:/@]+=[a-zA-Z0-9+\-.,_:/@ *\\"'\[\]\{\}]*)?$
-    ConstraintDescription: tags must be in format "Key=Value" keys can only contain
-      [a-zA-Z0-9+\-._:/@], values can contain [a-zA-Z0-9+\-._:/@ *\\"'\[\]\{\}]
-    Default: ''
-  # ------------------------------------------------------------#
-  # Import c1nsSecurityVPCTemplate stack(security_vpc.yml file)
-  # ------------------------------------------------------------#
-  VPC:
-    Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
-    Type: String
-  InternetGateway:
-    Description: IGW ID of the VPC where the GWLBE is deployed
-    Type: String
-  VPCEndpointServiceName:
-    Description: VPC Endpoint Service Name
-    Type: String
-
-# ------------------------------------------------------------#
-# Conditions
-# ------------------------------------------------------------#
-Conditions:
-  GWLBEndpointSubnetTag1Condition: !Not
-    - !Equals
-      - !Ref 'GWLBEndpointSubnetTag1'
-      - ''
-  GWLBEndpointSubnetTag2Condition: !Not
-    - !Equals
-      - !Ref 'GWLBEndpointSubnetTag2'
-      - ''
-  GWLBEndpointSubnetTag3Condition: !Not
-    - !Equals
-      - !Ref 'GWLBEndpointSubnetTag3'
-      - ''
 
 Resources:
   # ------------------------------------------------------------#
@@ -88,45 +38,6 @@ Resources:
       Tags:
         - Key: Name
           Value: GWLB subnet 1
-        - !If
-          - GWLBEndpointSubnetTag1Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag1
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag1
-          - !Ref AWS::NoValue
-        - !If
-          - GWLBEndpointSubnetTag2Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag2
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag2
-          - !Ref AWS::NoValue
-        - !If
-          - GWLBEndpointSubnetTag3Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag3
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag3
-          - !Ref AWS::NoValue
       MapPublicIpOnLaunch: true
   GWLBEndpointSubnet2:
     Type: AWS::EC2::Subnet
@@ -139,45 +50,6 @@ Resources:
       Tags:
         - Key: Name
           Value: GWLB subnet 2
-        - !If
-          - GWLBEndpointSubnetTag1Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag1
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag1
-          - !Ref AWS::NoValue
-        - !If
-          - GWLBEndpointSubnetTag2Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag2
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag2
-          - !Ref AWS::NoValue
-        - !If
-          - GWLBEndpointSubnetTag3Condition
-          - Key: !Select
-              - 0
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag3
-            Value: !Select
-              - 1
-              - !Split
-                - '='
-                - !Ref GWLBEndpointSubnetTag3
-          - !Ref AWS::NoValue
       MapPublicIpOnLaunch: true
 
   # ------------------------------------------------------------#
@@ -195,7 +67,7 @@ Resources:
     Properties:
       RouteTableId: !Ref GWLBEndpointSubnet1RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
+      GatewayId: !Ref NATGateway1
   GWLBEndpointSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -214,7 +86,7 @@ Resources:
     Properties:
       RouteTableId: !Ref GWLBEndpointSubnet2RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
+      GatewayId: !Ref NATGateway2
   GWLBEndpointSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -242,10 +114,87 @@ Resources:
       VpcEndpointType: GatewayLoadBalancer
       VpcId: !Ref VPC
 
+
+  # ------------------------------------------------------------#
+  # Create TGW Attachment Subnet for TGW Attachment
+  # ------------------------------------------------------------#
+  TGWAttachmentSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref TGWAttachmentSubnet1CIDR
+      AvailabilityZone: !Select
+        - 0
+        - !Ref AvailabilityZones
+      Tags:
+        - Key: Name
+          Value: TGW Attachment subnet 1
+      MapPublicIpOnLaunch: true
+  TGWAttachmentSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref TGWAttachmentSubnet2CIDR
+      AvailabilityZone: !Select
+        - 1
+        - !Ref AvailabilityZones
+      Tags:
+        - Key: Name
+          Value: TGW Attachment subnet 2
+      MapPublicIpOnLaunch: true
+
+  # ----------------------------------------------------------------------------#
+  # Create Route table to attach to the TGW Attachment Subnet for TGW Attachment
+  # ----------------------------------------------------------------------------#
+  TGWAttachmentSubnet1RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: ForTGWAttachmentSubnet1RouteTable
+  TGWAttachmentSubnet1Route:
+    DependsOn: GWLBEndpoint1
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TGWAttachmentSubnet1RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref GWLBEndpoint1
+  TGWAttachmentSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TGWAttachmentSubnet1
+      RouteTableId: !Ref TGWAttachmentSubnet1RouteTable
+  TGWAttachmentSubnet2RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: ForTGWAttachmentSubnet2RouteTable
+  TGWAttachmentSubnet2Route:
+    DependsOn: GWLBEndpoint2
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TGWAttachmentSubnet2RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref GWLBEndpoint2
+  TGWAttachmentSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TGWAttachmentSubnet2
+      RouteTableId: !Ref TGWAttachmentSubnet2RouteTable
+
 Outputs:
   GWLBEndpointSubnet1Route:
     Description: ID of GWLB Subnet 1 Route Table
     Value: !Ref GWLBEndpointSubnet1RouteTable
+  GWLBEndpointSubnet2Route:
+    Description: ID of GWLB Subnet 2 Route Table
+    Value: !Ref GWLBEndpointSubnet2RouteTable
   GWLBEndpointSubnet1ID:
     Description: ID of GWLB Subnet 1
     Value: !Ref GWLBEndpointSubnet1
+  GWLBEndpointSubnet2ID:
+    Description: ID of GWLB Subnet 2
+    Value: !Ref GWLBEndpointSubnet2
