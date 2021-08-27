@@ -422,9 +422,9 @@ Resources:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
         VPC: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCID
-        InternetGateway: !GetAtt c1nsSecurityVPCTemplate.Outputs.IGWID
-        NATGateway1: !GetAtt c1nsSecurityVPCTemplate.Outputs.NAT1ID
-        NATGateway2: !GetAtt c1nsSecurityVPCTemplate.Outputs.NAT2ID
+        InternetGateway: !GetAtt c1nsSecurityVPCTemplate.Outputs.InternetGatewayID
+        NATGateway1: !GetAtt c1nsSecurityVPCTemplate.Outputs.NATGatewayID
+        NATGateway2: !GetAtt c1nsSecurityVPCTemplate.Outputs.NATGatewayID
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
         AvailabilityZones:
           Fn::Join:

@@ -67,7 +67,7 @@ Resources:
     Properties:
       RouteTableId: !Ref GWLBEndpointSubnet1RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref NATGateway1
+      NatGatewayId: !Ref NATGateway1
   GWLBEndpointSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -86,7 +86,7 @@ Resources:
     Properties:
       RouteTableId: !Ref GWLBEndpointSubnet2RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref NATGateway2
+      NatGatewayId: !Ref NATGateway2
   GWLBEndpointSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -159,7 +159,7 @@ Resources:
     Properties:
       RouteTableId: !Ref TGWAttachmentSubnet1RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref GWLBEndpoint1
+      VpcEndpointId: !Ref GWLBEndpoint1
   TGWAttachmentSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -178,7 +178,7 @@ Resources:
     Properties:
       RouteTableId: !Ref TGWAttachmentSubnet2RouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref GWLBEndpoint2
+      VpcEndpointId: !Ref GWLBEndpoint2
   TGWAttachmentSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
