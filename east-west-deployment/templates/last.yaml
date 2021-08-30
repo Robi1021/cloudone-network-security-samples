@@ -42,15 +42,6 @@ Parameters:
   VPC:
     Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
     Type: String
-  InternetGateway:
-    Description: IGW ID of the VPC where the GWLBE is deployed
-    Type: String
-  NATGateway1:
-    Description: NAT Gateway 2 ID
-    Type: String
-  NATGateway2:
-    Description: NAT Gateway 2 ID
-    Type: String 
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Type: String
@@ -94,12 +85,6 @@ Resources:
       Tags:
         - Key: Name
           Value: ForGWLBEndpointSubnet1RouteTable
-  GWLBEndpointSubnet1Route:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref GWLBEndpointSubnet1RouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NATGateway1
   GWLBEndpointSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -113,12 +98,6 @@ Resources:
       Tags:
         - Key: Name
           Value: ForGWLBEndpointSubnet2RouteTable
-  GWLBEndpointSubnet2Route:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref GWLBEndpointSubnet2RouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NATGateway2
   GWLBEndpointSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
