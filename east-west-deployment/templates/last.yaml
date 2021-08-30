@@ -203,15 +203,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Path: "/"
-      RoleName: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-ModifyRouteTableLambdaRole"
+      RoleName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaRole
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -229,15 +221,7 @@ Resources:
   ModifyRouteTableLambdaPolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      ManagedPolicyName: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-ModifyRouteTableLambdaPolicy"
+      ManagedPolicyName: !Sub ${AWS::StackName}-ModifyRouteTableLambdaPolicy
       Path: /
       PolicyDocument:
         Version: 2012-10-17
@@ -293,15 +277,7 @@ Resources:
           StackName: !Ref AWS::StackName
           GWLBESubnetRT1: !Ref GWLBEndpointSubnet1RouteTable
           GWLBESubnetRT2: !Ref GWLBEndpointSubnet2RouteTable
-      FunctionName: 
-        Fn::Join:
-          - ""
-          - - Fn::Select:
-              - 2
-              - Fn::Split:
-                - "-"
-                - !Ref AWS::StackName
-            - "-ModifyRouteTable-Function"
+      FunctionName: !Sub ${AWS::StackName}-ModifyRouteTableFunction
       Handler: index.lambda_handler
       MemorySize: 128
       Runtime: python3.7
