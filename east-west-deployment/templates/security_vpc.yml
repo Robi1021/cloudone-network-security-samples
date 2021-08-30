@@ -869,6 +869,11 @@ Resources:
 
 
 Outputs:
+  VPCID:
+    Description: VPC Id
+    Value: !Ref SecurityVpc
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCId
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Value:

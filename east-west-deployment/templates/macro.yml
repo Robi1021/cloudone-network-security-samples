@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates CloudFormation macro to perform custom processing on templates
+Resources:
+    TransformExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                        Service: [lambda.amazonaws.com]
+                      Action: ['sts:AssumeRole']
+            Path: /
+            Policies:
+                - PolicyName: root
+                  PolicyDocument:
+                    Version: 2012-10-17
+                    Statement:
+                        - Effect: Allow
+                          Action: ['logs:*']
+                          Resource: 'arn:aws:logs:*:*:*'
+                        - Effect: Allow
+                          Action: ['ec2:*']
+                          Resource: '*'
+    TransformFunctionVpcPermissions:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: 'lambda:InvokeFunction'
+            FunctionName: !GetAtt TransformFunctionVpc.Arn
+            Principal: 'cloudformation.amazonaws.com'
+    TransformFunctionVpc:
+        Type: AWS::Lambda::Function
+        Properties:
+            Code:
+                ZipFile: |
+                  from copy import deepcopy as c
+
+
+                  def handler(ev, ctx):
+                      res = ev['fragment']['Resources']
+                      fragment = ev['fragment']
+                      params = ev['templateParameterValues']
+                      r = {'requestId': ev['requestId'], 'status': 'SUCCESS', 'fragment': fragment}
+                      vpc = 'SecurityVPC'
+                      azs = params.get('AvailabilityZones')
+                      try:
+                          subnets = [{'Name': f'{vpc}PublicSubnet', 'Value': c(res[f'{vpc}PublicSubnet1']),
+                                      'RT': f'{vpc}PublicSubnet1RouteTable1'},
+                                     {'Name': f'{vpc}ManagementSubnet',
+                                      'Value': c(res[f'{vpc}ManagementSubnet1']), 'RT': f'{vpc}ManagementSubnet1RouteTable1'},
+                                     {'Name': f'{vpc}GatewaySubnet', 'Value': c(res[f'{vpc}GatewaySubnet1']),
+                                      'RT': f'{vpc}GatewaySubnet1RouteTable1'}]
+                      except KeyError:
+                          r['status'] = 'FAIL'
+                          r['errorMessage'] = 'Unsupported security vpc template!'
+                          return r
+
+                      for i in range(1, len(azs)):
+                          num = str(i + 1)
+                          for subnet in subnets:
+                              name = subnet['Name']
+                              name_count = name + num
+                              res[name_count] = c(subnet['Value'])
+                              cidr = subnet['Value']['Properties']['CidrBlock']['Fn::Select'][0] + (i * 3)
+                              res[name_count]['Properties']['CidrBlock']['Fn::Select'][0] = cidr
+                              res[name_count]['Properties']['AvailabilityZone']['Fn::Select'][0] = i
+                              if 'Public' in name:
+                                  res[name_count + 'EIP'] = c(res[name + '1EIP'])
+                                  res[name_count + 'EIP']['Properties']['Tags'][0][
+                                      'Value'] = f'Security VPC Public SubnetSubnet{i + 1} EIP'
+                                  res[name_count + 'NATGateway'] = c(res[name + '1NATGateway'])
+                                  res[name_count + 'NATGateway']['Properties']['AllocationId']['Fn::GetAtt'][
+                                      0] = f'{vpc}PublicSubnet{i + 1}EIP'
+                                  res[name_count + 'NATGateway']['Properties']['SubnetId']['Ref'] = f'{vpc}PublicSubnet{i + 1}'
+                              if 'Management' in name:
+                                  res[name_count + 'RouteTable1'] = c(res[subnet['RT']])
+                                  res[name_count + 'DefaultRoute'] = c(res[name + '1' + 'DefaultRoute'])
+                                  res[name_count + 'DefaultRoute']['Properties']['NatGatewayId'][
+                                      'Ref'] = f'{vpc}PublicSubnet{i + 1}NATGateway'
+                                  res[name_count + 'DefaultRoute']['Properties']['RouteTableId']['Ref'] = name_count + 'RouteTable1'
+                                  res['AutoScalingGroup']['Properties']['VPCZoneIdentifier'].append({'Ref': name_count})
+                              if 'Gateway' in name:
+                                  res['GatewayLoadBalancer']['Properties']['Subnets'].append({'Ref': name_count})
+                                  for port, details in {"6081": ["udp", "GENEVE encapsulated traffic from GWLB"],
+                                                        "1450": ["tcp", "health check requests from GWLB"]}.items():
+                                      res['TrafficPortSecurityGroup']['Properties']['SecurityGroupIngress'].append(
+                                          {'CidrIp': {"Fn::Join": ["", [
+                                              {"Fn::Select": [cidr, res[name_count]['Properties']['CidrBlock']['Fn::Select'][1]]}]]},
+                                           "Description": f'allow {details[1]}',
+                                           'FromPort': port, 'IpProtocol': details[0], 'ToPort': port}
+                                      )
+                              # Associations
+                              _id = name_count + 'Association'
+                              res[_id] = {}
+                              res[_id]['Type'] = 'AWS::EC2::SubnetRouteTableAssociation'
+                              res[_id]['Properties'] = {}
+                              res[_id]['Properties']['RouteTableId'] = {}
+                              if 'Management' in name:
+                                  res[_id]['Properties']['RouteTableId']['Ref'] = name_count + 'RouteTable1'
+                              else:
+                                  res[_id]['Properties']['RouteTableId']['Ref'] = subnet['RT']
+                              res[_id]['Properties']['SubnetId'] = {}
+                              res[_id]['Properties']['SubnetId']['Ref'] = name_count
+                      return r
+            Handler: index.handler
+            Runtime: python3.6
+            Timeout: 60
+            Role: !GetAtt TransformExecutionRole.Arn
+    Transform:
+      Type: AWS::CloudFormation::Macro
+      Properties:
+        Name: CreateVPCResourcesPerAZ
+        Description: Macro to create VPC resources for every available AZ
+        FunctionName: !GetAtt TransformFunctionVpc.Arn

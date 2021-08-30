@@ -359,7 +359,7 @@ Resources:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/security_vpc.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/security_vpc.yml
       Parameters:
         sshKeyPairName: !Ref sshKeyPairName
         CloudOneAPIKEY: !Ref CloudOneAPIKEY
