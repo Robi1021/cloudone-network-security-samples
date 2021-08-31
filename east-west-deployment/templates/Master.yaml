@@ -417,10 +417,13 @@ Resources:
   # ------------------------------------------------------------#
   ModifyRTTemplate:
     Condition: DeployC1NS
+    DependsOn: c1nsSecurityVPCTemplate
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
+        VictimVpcCIDR: 192.168.0.0/16
+        AttackerVpcCIDR: 172.16.0.0/16
         SecurityVpcStackName: 
           Fn::Select:
             - 1
@@ -429,6 +432,9 @@ Resources:
               - !Ref c1nsSecurityVPCTemplate
         VPC: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCID
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
+        PublicSubnet1ID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVPCPublicSubnet1
+        PublicSubnet2ID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVPCPublicSubnet2
+        IGWID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVpcIGW
         AvailabilityZones:
           Fn::Join:
             - ","

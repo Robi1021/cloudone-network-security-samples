@@ -42,12 +42,43 @@ Parameters:
   SecurityVpcStackName:
     Description: Enter the Stack Name of the Security VPC you would like to modify
     Type: String
+    Default: ew-c1nsSecurityVPCTemplate-11914A9ZY188D
   VPC:
     Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
     Type: String
+    Default: vpc-0ef3037d92943fd05
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Type: String
+    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0d28eec766eabbd95
+  PublicSubnet1ID:
+    Description: Enter the Public Subnet 1 ID in security vpc
+    Type: String
+    Default: subnet-0a894c74c758d72a3
+  PublicSubnet2ID:
+    Description: Enter the Public Subnet 1 ID in security vpc
+    Type: String
+    Default: subnet-0e4425bb5ef62f110
+  IGWID:
+    Description: Enter the Internet Gateway ID in security vpc
+    Type: String
+    Default: igw-0031f4aad7db785a9
+
+  # ------------------------------------------------------------#
+  # Import BaseSite stack(BaseSite.yaml file)
+  # ------------------------------------------------------------#
+  VictimVpcCIDR:
+    Type: String
+    Description: Enter the Victim VPC CIDR
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 192.168.0.0/16
+  AttackerVpcCIDR:
+    Type: String
+    Description: Enter the Attacker VPC CIDR
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 172.16.0.0/16
 
 Resources:
   # ------------------------------------------------------------#
@@ -63,7 +94,7 @@ Resources:
         - !Ref AvailabilityZones
       Tags:
         - Key: Name
-          Value: GWLB subnet 1
+          Value: GWLBE subnet 1
       MapPublicIpOnLaunch: true
   GWLBEndpointSubnet2:
     Type: AWS::EC2::Subnet
@@ -75,7 +106,7 @@ Resources:
         - !Ref AvailabilityZones
       Tags:
         - Key: Name
-          Value: GWLB subnet 2
+          Value: GWLBE subnet 2
       MapPublicIpOnLaunch: true
 
   # ------------------------------------------------------------#
@@ -200,6 +231,76 @@ Resources:
       RouteTableId: !Ref TGWAttachmentSubnet2RouteTable
 
   # ------------------------------------------------------------#
+  # Create Route table to attach to the public subnets
+  # ------------------------------------------------------------#
+  PublicSubnet1RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1RouteTable
+  InternetSubnet1Route:
+    DependsOn: GWLBEndpoint1
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet1RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGWID
+  AttackerSubnet1Route:
+    DependsOn: GWLBEndpoint1
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet1RouteTable
+      DestinationCidrBlock: !Ref AttackerVpcCIDR
+      VpcEndpointId: !Ref GWLBEndpoint1
+  VictimSubnet1Route:
+    DependsOn: GWLBEndpoint1
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet1RouteTable
+      DestinationCidrBlock: !Ref VictimVpcCIDR
+      VpcEndpointId: !Ref GWLBEndpoint1
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1ID
+      RouteTableId: !Ref PublicSubnet1RouteTable
+  PublicSubnet2RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2RouteTable
+  InternetSubnet2Route:
+    DependsOn: GWLBEndpoint2
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet2RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGWID
+  AttackerSubnet2Route:
+    DependsOn: GWLBEndpoint2
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet2RouteTable
+      DestinationCidrBlock: !Ref AttackerVpcCIDR
+      VpcEndpointId: !Ref GWLBEndpoint2
+  VictimSubnet2Route:
+    DependsOn: GWLBEndpoint2
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicSubnet2RouteTable
+      DestinationCidrBlock: !Ref VictimVpcCIDR
+      VpcEndpointId: !Ref GWLBEndpoint2
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2ID
+      RouteTableId: !Ref PublicSubnet2RouteTable
+
+  # ------------------------------------------------------------#
   # Create Lambda for modify security vpc route tables
   # ------------------------------------------------------------#
   ModifyRouteTableLambdaRole:
@@ -283,6 +384,8 @@ Resources:
           StackName: !Ref SecurityVpcStackName
           GWLBESubnetRT1: !Ref GWLBEndpointSubnet1RouteTable
           GWLBESubnetRT2: !Ref GWLBEndpointSubnet2RouteTable
+          AttackerVpcCIDR: !Ref AttackerVpcCIDR
+          VictimVpcCIDR: !Ref VictimVpcCIDR
       FunctionName: !Sub ${AWS::StackName}-ModifyRouteTableFunction
       Handler: index.lambda_handler
       MemorySize: 128
