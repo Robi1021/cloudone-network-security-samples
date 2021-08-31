@@ -421,6 +421,12 @@ Resources:
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
+        SecurityVpcStackName: 
+          Fn::Select:
+            - 1
+            - Fn::Split:
+              - /
+              - !Ref c1nsSecurityVPCTemplate
         VPC: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCID
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
         AvailabilityZones:

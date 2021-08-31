@@ -39,6 +39,9 @@ Parameters:
   # ------------------------------------------------------------#
   # Import c1nsSecurityVPCTemplate stack(security_vpc.yml file)
   # ------------------------------------------------------------#
+  SecurityVpcStackName:
+    Description: Enter the Stack Name of the Security VPC you would like to modify
+    Type: String
   VPC:
     Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
     Type: String
@@ -227,7 +230,8 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
-              - ec2:ReplaceRoute
+              - ec2:CreateRoute
+              - cloudFormation:DescribeStackResource
             Resource: "*"
             Effect: Allow
 
@@ -248,22 +252,24 @@ Resources:
           route_table_id2 = os.getenv('GWLBESubnetRT2')
           ec2 = boto3.resource('ec2')
           cf = boto3.client('cloudformation')
-          route1 = ec2.Route(route_table_id1,destination_cidr_block)
-          route2 = ec2.Route(route_table_id2,destination_cidr_block)
+          route_table1 = ec2.RouteTable(route_table_id1)
+          route_table2 = ec2.RouteTable(route_table_id2)
 
           def lambda_handler(event, context):
-            natg1 = cf.describe_stack_resources(stack_name, 'SecurityVPCPublicSubnet1NATGateway')
-            natg_id1 = stack_resource[0]['PhysicalResourceId']
-            natg2 = cf.describe_stack_resources(stack_name, 'SecurityVPCPublicSubnet2NATGateway')
-            natg_id2 = stack_resource[0]['PhysicalResourceId']
+            natg1 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1NATGateway')
+            natg_id1 = natg1['StackResourceDetail']['PhysicalResourceId']
+            natg2 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2NATGateway')
+            natg_id2 = natg2['StackResourceDetail']['PhysicalResourceId']
             logger.info("event: {}".format(event))
             status = cfnresponse.SUCCESS
             try:
               if event['RequestType'] == 'Create':
-                route1.replace(
+                route_table1.create_route(
+                    DestinationCidrBlock='0.0.0.0/0',
                     NatGatewayId=natg_id1
                 )
-                route2.replace(
+                route_table2.create_route(
+                    DestinationCidrBlock='0.0.0.0/0',
                     NatGatewayId=natg_id2
                 )
             except Exception:
@@ -274,7 +280,7 @@ Resources:
       Role: !GetAtt ModifyRouteTableLambdaRole.Arn
       Environment: 
         Variables:
-          StackName: !Ref AWS::StackName
+          StackName: !Ref SecurityVpcStackName
           GWLBESubnetRT1: !Ref GWLBEndpointSubnet1RouteTable
           GWLBESubnetRT2: !Ref GWLBEndpointSubnet2RouteTable
       FunctionName: !Sub ${AWS::StackName}-ModifyRouteTableFunction
