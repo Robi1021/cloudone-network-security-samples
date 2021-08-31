@@ -51,18 +51,6 @@ Parameters:
     Description: VPC Endpoint Service Name
     Type: String
     Default: com.amazonaws.vpce.us-west-1.vpce-svc-0d28eec766eabbd95
-  PublicSubnet1ID:
-    Description: Enter the Public Subnet 1 ID in security vpc
-    Type: String
-    Default: subnet-0a894c74c758d72a3
-  PublicSubnet2ID:
-    Description: Enter the Public Subnet 1 ID in security vpc
-    Type: String
-    Default: subnet-0e4425bb5ef62f110
-  IGWID:
-    Description: Enter the Internet Gateway ID in security vpc
-    Type: String
-    Default: igw-0031f4aad7db785a9
 
   # ------------------------------------------------------------#
   # Import BaseSite stack(BaseSite.yaml file)
@@ -240,13 +228,6 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicSubnet1RouteTable
-  InternetSubnet1Route:
-    DependsOn: GWLBEndpoint1
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PublicSubnet1RouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref IGWID
   AttackerSubnet1Route:
     DependsOn: GWLBEndpoint1
     Type: AWS::EC2::Route
@@ -261,11 +242,6 @@ Resources:
       RouteTableId: !Ref PublicSubnet1RouteTable
       DestinationCidrBlock: !Ref VictimVpcCIDR
       VpcEndpointId: !Ref GWLBEndpoint1
-  PublicSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnet1ID
-      RouteTableId: !Ref PublicSubnet1RouteTable
   PublicSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -273,13 +249,6 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicSubnet2RouteTable
-  InternetSubnet2Route:
-    DependsOn: GWLBEndpoint2
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PublicSubnet2RouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref IGWID
   AttackerSubnet2Route:
     DependsOn: GWLBEndpoint2
     Type: AWS::EC2::Route
@@ -294,11 +263,6 @@ Resources:
       RouteTableId: !Ref PublicSubnet2RouteTable
       DestinationCidrBlock: !Ref VictimVpcCIDR
       VpcEndpointId: !Ref GWLBEndpoint2
-  PublicSubnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnet2ID
-      RouteTableId: !Ref PublicSubnet2RouteTable
 
   # ------------------------------------------------------------#
   # Create Lambda for modify security vpc route tables
@@ -347,31 +311,48 @@ Resources:
           logger = logging.getLogger()
           logger.setLevel(logging.INFO)
 
-          destination_cidr_block = "0.0.0.0/0"
-          stack_name = os.getenv('StackName')
-          route_table_id1 = os.getenv('GWLBESubnetRT1')
-          route_table_id2 = os.getenv('GWLBESubnetRT2')
           ec2 = boto3.resource('ec2')
           cf = boto3.client('cloudformation')
-          route_table1 = ec2.RouteTable(route_table_id1)
-          route_table2 = ec2.RouteTable(route_table_id2)
+
+          destination_cidr_block = "0.0.0.0/0"
+          stack_name = os.getenv('StackName')
+          gwlbe_route_table_id1 = os.getenv('GWLBESubnetRT1')
+          gwlbe_route_table_id2 = os.getenv('GWLBESubnetRT2')
+          gwlbe_route_table1 = ec2.RouteTable(gwlbe_route_table_id1)
+          gwlbe_route_table2 = ec2.RouteTable(gwlbe_route_table_id2)
+          
+          public_route_table_id1 = os.getenv('PublicSubnetRT1')
+          public_route_table_id2 = os.getenv('PublicSubnetRT2')          
+          public_route_table1 = ec2.RouteTable(public_route_table_id1)
+          public_route_table2 = ec2.RouteTable(public_route_table_id2)
 
           def lambda_handler(event, context):
             natg1 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1NATGateway')
             natg_id1 = natg1['StackResourceDetail']['PhysicalResourceId']
             natg2 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2NATGateway')
             natg_id2 = natg2['StackResourceDetail']['PhysicalResourceId']
+            igw = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVpcIGW')
+            igw_id = igw['StackResourceDetail']['PhysicalResourceId']
+
             logger.info("event: {}".format(event))
             status = cfnresponse.SUCCESS
             try:
               if event['RequestType'] == 'Create':
-                route_table1.create_route(
+                gwlbe_route_table1.create_route(
                     DestinationCidrBlock='0.0.0.0/0',
                     NatGatewayId=natg_id1
                 )
-                route_table2.create_route(
+                gwlbe_route_table2.create_route(
                     DestinationCidrBlock='0.0.0.0/0',
-                    NatGatewayId=natg_id2
+                    GatewayId=natg_id2
+                )
+                gwlbe_route_table1.create_route(
+                    DestinationCidrBlock='0.0.0.0/0',
+                    GatewayId=igw_id
+                )
+                gwlbe_route_table2.create_route(
+                    DestinationCidrBlock='0.0.0.0/0',
+                    GatewayId=igw_id
                 )
             except Exception:
               logger.error('Unhandled exception', exc_info=True)
@@ -384,6 +365,8 @@ Resources:
           StackName: !Ref SecurityVpcStackName
           GWLBESubnetRT1: !Ref GWLBEndpointSubnet1RouteTable
           GWLBESubnetRT2: !Ref GWLBEndpointSubnet2RouteTable
+          PublicSubnetRT1: !Ref PublicSubnet1RouteTable
+          PublicSubnetRT2: !Ref PublicSubnet2RouteTable
           AttackerVpcCIDR: !Ref AttackerVpcCIDR
           VictimVpcCIDR: !Ref VictimVpcCIDR
       FunctionName: !Sub ${AWS::StackName}-ModifyRouteTableFunction

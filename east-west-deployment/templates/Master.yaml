@@ -432,9 +432,6 @@ Resources:
               - !Ref c1nsSecurityVPCTemplate
         VPC: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCID
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
-        PublicSubnet1ID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVPCPublicSubnet1
-        PublicSubnet2ID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVPCPublicSubnet2
-        IGWID: !GetAtt c1nsSecurityVPCTemplate.Resources.SecurityVpcIGW
         AvailabilityZones:
           Fn::Join:
             - ","

@@ -1,0 +1,915 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates Security VPC for GWLB deployments
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "VPC and EC2 Configurations"
+        Parameters:
+          - AvailabilityZones
+          - SecurityVPCCIDR
+          - sshKeyPairName
+      -
+        Label:
+          default: "Cloud One Configuration"
+        Parameters:
+          - CloudOneAPIKEY
+          - NSVAAMI
+          - NsvaCountPerAz
+          - InstanceType
+    ParameterLabels:
+      AvailabilityZones:
+        default: "What are the Availability Zones for your Workload VPC subnets?"
+      NsvaCountPerAz:
+        default: "How many Network Security instances are you deploying in each Availability Zone?"
+      NSVAAMI:
+        default: "Network Security Instance AMI"
+      sshKeyPairName:
+        default: "SSH Key Pair to access EC2 Instances"
+      SecurityVPCCIDR:
+        default: "Security VPC CIDR Block"
+      CloudOneAPIKEY:
+        default: "Cloud One API KEY"
+      EnableInspectionLogs:
+        default: "Would you like NSVA to publish Inspection Logs to CloudWatch?"
+Parameters:
+  sshKeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  CloudOneAPIKEY:
+    Type: String
+    NoEcho: true
+  NSVAAMI:
+    Type: AWS::EC2::Image::Id
+  InstanceType:
+    Type: String
+    Description: NSVA Instance type
+    Default: c5n.2xlarge
+    AllowedValues:
+      - c5.9xlarge
+      - c5.4xlarge
+      - c5.2xlarge
+      - c5n.9xlarge
+      - c5n.4xlarge
+      - c5n.2xlarge
+  AvailabilityZones:
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+    Description: Availability Zones
+  SecurityVPCCIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-6]))$"
+    ConstraintDescription: "CIDR block parameter must be in the form x.x.x.x/16-26"
+    Type: String
+    Default: "10.10.10.0/16"
+  NsvaCountPerAz:
+    Type: Number
+    Default: 1
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+  EnableInspectionLogs:
+    Description: If enabled, NSVA Inspection Logs will be published to CloudWatch log group "network_security_logs".
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
+Conditions:
+  ShouldEnableInspectionLogs:
+    !Equals [true, !Ref EnableInspectionLogs]
+Resources:
+  SecurityVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref SecurityVPCCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: Security VPC
+  SecurityVPCPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [ 0, !Cidr [ !Ref SecurityVPCCIDR, !GetAtt NumberOfSubnets.Value, 4 ]]
+      VpcId:
+        Ref: SecurityVpc
+      AvailabilityZone: !Select [ 0, !Ref AvailabilityZones ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Security VPC Public Subnet
+  SecurityVPCPublicSubnet1RouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: SecurityVpc
+      Tags:
+        - Key: Name
+          Value: Security VPC Public Subnet Route Table
+  SecurityVPCPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: SecurityVPCPublicSubnet1RouteTable1
+      SubnetId:
+        Ref: SecurityVPCPublicSubnet1
+  SecurityVPCPublicSubnet1DefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: SecurityVPCPublicSubnet1RouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: SecurityVpcIGW
+    DependsOn:
+      - SecurityVpcVPCGWAttach
+  SecurityVPCPublicSubnet1EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: Security VPC Public SubnetSubnet1 EIP
+  SecurityVPCPublicSubnet1NATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+          - SecurityVPCPublicSubnet1EIP
+          - AllocationId
+      SubnetId:
+        Ref: SecurityVPCPublicSubnet1
+      Tags:
+        - Key: Name
+          Value: Security VPC NAT GW
+  SecurityVPCManagementSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [ 1, !Cidr [ !Ref SecurityVPCCIDR, !GetAtt NumberOfSubnets.Value, 4 ]]
+      VpcId:
+        Ref: SecurityVpc
+      AvailabilityZone: !Select [ 0, !Ref AvailabilityZones ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: Security VPC Management Subnet
+  SecurityVPCManagementSubnet1RouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: SecurityVpc
+      Tags:
+        - Key: Name
+          Value: Security VPC Management Subnet Route Table
+  SecurityVPCManagementSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: SecurityVPCManagementSubnet1RouteTable1
+      SubnetId:
+        Ref: SecurityVPCManagementSubnet1
+  SecurityVPCManagementSubnet1DefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: SecurityVPCManagementSubnet1RouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: SecurityVPCPublicSubnet1NATGateway
+  SecurityVPCGatewaySubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [ 2, !Cidr [ !Ref SecurityVPCCIDR, !GetAtt NumberOfSubnets.Value, 4 ]]
+      VpcId:
+        Ref: SecurityVpc
+      AvailabilityZone: !Select [ 0, !Ref AvailabilityZones ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: Security VPC Gateway Subnet
+  SecurityVPCGatewaySubnet1RouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: SecurityVpc
+      Tags:
+        - Key: Name
+          Value: Security VPC Gateway Subnet Route Table
+  SecurityVPCGatewaySubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: SecurityVPCGatewaySubnet1RouteTable1
+      SubnetId:
+        Ref: SecurityVPCGatewaySubnet1
+  SecurityVpcIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: Security Vpc IGW
+  SecurityVpcVPCGWAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: SecurityVpc
+      InternetGatewayId:
+        Ref: SecurityVpcIGW
+  MgmtPortSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Network Security Management Port SG
+      GroupName: mgmt-sg
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId:
+        Ref: SecurityVpc
+  TrafficPortSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Network Security Traffic Port SG
+      GroupName: traffic-sg
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: !Join ["", [!Select [ 2, !Cidr [ !Ref SecurityVPCCIDR, !GetAtt NumberOfSubnets.Value, 4 ]]]]
+          Description: allow GENEVE encapsulated traffic from GWLB
+          FromPort: 6081
+          IpProtocol: udp
+          ToPort: 6081
+        - CidrIp: !Join ["", [!Select [ 2, !Cidr [ !Ref SecurityVPCCIDR, !GetAtt NumberOfSubnets.Value, 4 ]]]]
+          Description: allow health check requests from GWLB
+          FromPort: 1450
+          IpProtocol: tcp
+          ToPort: 1450
+      VpcId:
+        Ref: SecurityVpc
+  NetworkSecurityRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                Fn::Join:
+                  - ""
+                  - - ec2.
+                    - Ref: AWS::URLSuffix
+        Version: "2012-10-17"
+  NetworkSecurityRoleDefaultPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - cloudwatch:PutMetricData
+              - logs:DescribeLogStreams
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - ec2:DescribeTags
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: NetworkSecurityRoleDefaultPolicy
+      Roles:
+        - Ref: NetworkSecurityRole
+  NetworkSecurityInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: NetworkSecurityRole
+  GatewayLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: gateway
+      LoadBalancerAttributes:
+        - Key: load_balancing.cross_zone.enabled
+          Value: true
+      Subnets:
+        - Ref: SecurityVPCGatewaySubnet1
+      Name: 'SecurityVpcGWLB'
+  GatewayLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: GatewayLoadBalancerTargetGroup
+      LoadBalancerArn:
+        Ref: GatewayLoadBalancer
+    DependsOn:
+      - GatewayLoadBalancer
+      - GatewayLoadBalancerTargetGroup
+  GatewayLoadBalancerTargetGroup:
+        Type: AWS::ElasticLoadBalancingV2::TargetGroup
+        Properties:
+          Protocol: GENEVE
+          Port: 6081
+          Name: TG-NSVA
+          HealthCheckPort: 1450
+          HealthCheckProtocol: TCP
+          HealthyThresholdCount: 2
+          UnhealthyThresholdCount: 2
+          HealthCheckTimeoutSeconds: 2
+          HealthCheckIntervalSeconds: 5
+          VpcId:
+            Ref: SecurityVpc
+          TargetType: instance
+        DependsOn:
+          - GatewayLoadBalancer
+  GatewayLoadBalancerResourcesVpcEndpointService:
+    Type: AWS::EC2::VPCEndpointService
+    Properties:
+      GatewayLoadBalancerArns:
+        - Ref: GatewayLoadBalancer
+      AcceptanceRequired: false
+  NsvaLauchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !GetAtt NetworkSecurityInstanceProfile.Arn
+        ImageId: !Ref NSVAAMI
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref sshKeyPairName
+        NetworkInterfaces:
+        - DeleteOnTermination: true
+          DeviceIndex: 0
+          SubnetId:
+            Ref: SecurityVPCManagementSubnet1
+          Description: Network Security Data Port
+          Groups:
+            - Fn::GetAtt:
+                - TrafficPortSecurityGroup
+                - GroupId
+        - DeleteOnTermination: true
+          DeviceIndex: 1
+          SubnetId:
+            Ref: SecurityVPCManagementSubnet1
+          Description: Network Security Mgmt Port
+          Groups:
+            - Fn::GetAtt:
+                - MgmtPortSecurityGroup
+                - GroupId
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: Network Security Instance
+        UserData:
+          Fn::Base64:
+            !Sub
+              - |
+                  # -- VTPS capability GWLB-mode=1
+                  # -- VTPS capability GWLB-healthcheck-port=1450
+                  # -- VTPS ManagementPort=2
+                  # -- START VTPS CLI
+                  cloudone register ${CloudOneAPIKEY}
+                  edit
+                  interface mgmt
+                  host name NetworkSecurity-${AWS::Region}
+                  exit
+                  high-availability
+                  cloudwatch-health period 1
+                  exit
+                  commit
+                  exit
+                  save-config -y
+                  ${CloudwatchInspectionLogs}
+                  # -- END VTPS CLI
+                  # -- START VTPS CLOUDWATCH
+                  log-group-name network_security_logs
+                  # -- END VTPS CLOUDWATCH
+                  # -- START VTPS CF SIGNAL
+                  stack ${AWS::StackName}
+                  resource AutoScalingGroup
+                  region ${AWS::Region}
+                  # -- END VTPS CF SIGNAL
+              - CloudwatchInspectionLogs: !If
+                  - ShouldEnableInspectionLogs
+                  - !Sub
+                   |-
+                    edit
+                    log
+                    cloudwatch ipsAlert enable log-group-name network_security_logs
+                    cloudwatch ipsBlock enable log-group-name network_security_logs
+                    cloudwatch host enable log-group-name network_security_logs
+                    exit
+                    commit
+                    exit
+                    save-config -y
+                  - ""
+      LaunchTemplateName: NSVALaunchTemplate
+  AutoScalingGroup:
+   Type: AWS::AutoScaling::AutoScalingGroup
+   Properties:
+     AutoScalingGroupName: Cloud One Network Security AutoScaling Group
+     LaunchTemplate:
+       LaunchTemplateId: !Ref NsvaLauchTemplate
+       Version: !GetAtt NsvaLauchTemplate.LatestVersionNumber
+     MaxSize: !GetAtt MultiplyNumbers.Value
+     MinSize: !GetAtt MultiplyNumbers.AzCount
+     DesiredCapacity: !GetAtt MultiplyNumbers.Value
+     TargetGroupARNs:
+       - !Ref GatewayLoadBalancerTargetGroup
+     VPCZoneIdentifier:
+       - !Ref SecurityVPCManagementSubnet1
+   CreationPolicy:
+     ResourceSignal:
+       Count: !GetAtt MultiplyNumbers.Value
+       Timeout: PT15M
+
+  LambdaManageNsvaAlarms:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.lambda_handler
+      Role:
+        Fn::GetAtt:
+          - LambdaManageNsvaAlarmsExecutionRole
+          - Arn
+      Runtime: python3.7
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+
+          # Create CloudWatch client
+          cloudwatch = boto3.client('cloudwatch')
+          EXPECTED_DETAIL_TYPES = [ "EC2 Instance Launch Successful", "EC2 Instance Terminate Successful"]
+          METRIC_NAME = "Health State"
+          NAMESPACE = 'Cloud One - Network Security'
+
+          def lambda_handler(event, context):
+              print('got event {}'.format(event))
+              if not event.get("source") == "aws.autoscaling":
+                  print("Received wrong even source")
+                  return
+
+              detail_type = event.get("detail-type")
+              if not detail_type:
+                  print("Detail type is missing. Cannot proceed")
+                  return
+              if detail_type not in EXPECTED_DETAIL_TYPES:
+                  print("Unexpected detail type. Cannot Proceed")
+                  return
+
+              event_details = event.get("detail")
+              if not event_details:
+                  print("Empty Event Details. Cannot proceed")
+                  return
+              instance_id = event_details.get("EC2InstanceId")
+              if not instance_id:
+                  print("Missing Instance Id. Cannot Proceed")
+                  return
+              region = event.get("region")
+              account = event.get("account")
+              sns_topic = os.environ.get("sns_topic")
+              if detail_type == "EC2 Instance Launch Successful":
+                  create_alarm(instance_id, region, account, sns_topic)
+              if detail_type == "EC2 Instance Terminate Successful":
+                  delete_alarm(instance_id)
+
+          def create_alarm(instance_id, region, account, sns_topic):
+              # Create alarm
+              alarm_actions = [f"arn:aws:swf:{region}:{account}:action/actions/AWS_EC2.InstanceId.Reboot/1.0"]
+              if sns_topic:
+                  alarm_actions.append(sns_topic)
+              print(f"Creating alarm: nsva-health-{instance_id}")
+              cloudwatch.put_metric_alarm(AlarmName=f"nsva-health-{instance_id}",
+              ComparisonOperator='GreaterThanOrEqualToThreshold',
+              EvaluationPeriods=1,
+              MetricName=METRIC_NAME,
+              Namespace=NAMESPACE,
+              Period=10,
+              Statistic='Maximum',
+              Threshold=2,
+              TreatMissingData='missing',
+              AlarmDescription='This alarm reboots NetworkSecurity appliance on failure',
+              AlarmActions=alarm_actions,
+              Dimensions=[
+                    {
+                    'Name': 'InstanceId',
+                    'Value': instance_id
+                },
+                ]
+                )
+
+          def delete_alarm(instance_id):
+              response = cloudwatch.describe_alarms_for_metric(
+              MetricName=METRIC_NAME,
+              Namespace=NAMESPACE,
+              Dimensions=[
+                {
+                'Name': 'InstanceId',
+                'Value': instance_id
+                 },
+                ]
+                )
+              alarms = response.get("MetricAlarms")
+              print(f"Alarm(s) found: { alarms }")
+              for alarm in alarms:
+                  alarm_name = alarm.get("AlarmName")
+                  if alarm_name:
+                      print(f"Deleting alarm: { alarm_name }")
+                      resp = cloudwatch.delete_alarms(AlarmNames=[alarm_name])
+                      print(resp)
+                  else:
+                      print("Missing alarm name.")
+
+  LambdaManageNsvaAlarmsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+
+  LambdaManageNsvaDefaultPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - cloudwatch:DescribeAlarmsForMetric
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:DeleteAlarms
+            Effect: Allow
+            Resource: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:nsva-health-*"
+        Version: "2012-10-17"
+      PolicyName: LambdaManageNsvaDefaultPolicy
+      Roles:
+        - Ref: LambdaManageNsvaAlarmsExecutionRole
+
+  ASGEventsRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: Manage NSVA CloudWatch Alarms based on Autoscaling events
+      Name: Manage-NSVA-Alarms
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - "EC2 Instance Launch Successful"
+          - "EC2 Instance Terminate Successful"
+        detail:
+            AutoScalingGroupName:
+              - Cloud One Network Security AutoScaling Group
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt [LambdaManageNsvaAlarms, 'Arn']
+          Id: "manage-nsva-alarms"
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: LambdaManageNsvaAlarms
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn:
+        Fn::GetAtt:
+          - ASGEventsRule
+          - "Arn"
+
+  LambdaUnregisterAppliance:
+    Properties:
+      Code:
+        ZipFile:
+          !Sub
+            - |-
+              import urllib3, json
+              import cfnresponse as cp
+              base_url = "https://cloudone.trendmicro.com/api/network/appliances"
+              api_secret_key = "${API_KEY}"
+
+
+              def lambda_handler(event, cxt):
+                  print(f'Lambda function triggered. Event: {event}')
+                  if not event or not isinstance(event, dict): print('Cannot process event'); return
+                  triggered_by_cft = False
+                  physicalResourceId = event.get('PhysicalResourceId')
+                  if event.get('RequestType') in ['Create', 'Update']: cp.send(event, cxt, cp.SUCCESS, {}, physicalResourceId); return
+                  if event.get('RequestType') == 'Delete': triggered_by_cft = True; detail = event['ResourceProperties']['detail']
+                  elif 'detail' in event: detail = event['detail']
+                  else: print('Cannot process event'); return
+                  instance_str = detail['EC2InstanceId']
+                  payload = {"searchCriteria": [{"stringTest": "equal", "stringValue": instance_str, "fieldName": "instanceId"}]}
+                  headers = {'Content-Type': 'application/json', 'api-version': 'v1', 'api-secret-key': f'{api_secret_key}'}
+                  http = urllib3.PoolManager()
+                  resp = http.request('POST', f'{base_url}/search', headers=headers, body=json.dumps(payload))
+                  print(f'request to search instance Id: {instance_str}, response status :{resp.status}')
+                  print(resp.data)
+                  if resp.status == 200:
+                      try:
+                          data = json.loads(resp.data)
+                          if 'appliances' in data:
+                              device_list = data['appliances']
+                              if len(device_list) == 1:
+                                  device = device_list[0]
+                                  if 'ID' in device:
+                                      id_str = device['ID']; print(f'instanceId:{instance_str}, id:{id_str}'); resp = http.request('DELETE', f'{base_url}/{id_str}', headers=headers)
+                                      print(f'DELETE request with appliance ID: {id_str}, response status: {resp.status}')
+                                      if resp.status == 204:
+                                          print('OK')
+                                          if triggered_by_cft: cp.send(event, cxt, cp.SUCCESS, {}, physicalResourceId)
+                                          return
+                                      else: msg = f'ERR: delete ID: {id_str}, response status: {resp.status}'
+                                  else: msg = 'ERR: ID not found in response'
+                              else:
+                                  print(f"{'No devices found in response from CloudOne' if len(device_list) == 0 else f'Unexpected number of devices: len({device_list}), instance Id : {instance_str}'}")
+                                  if triggered_by_cft: cp.send(event, cxt, cp.SUCCESS, {}, physicalResourceId)
+                                  return
+                          else:
+                              print('No devices found in response from CloudOne')
+                              if triggered_by_cft: cp.send(event, cxt, cp.SUCCESS, {}, physicalResourceId)
+                              return
+                      except (ValueError, TypeError): msg = 'Unexpected response from CloudOne (not JSON)'
+                  else:
+                      msg = 'Appliance unregistration failed. Call this API, https://cloudone.trendmicro.com/docs/network-security/api-reference/#operation/unregisterApplianceUsingDELETE, then delete the stack.' if resp.status == 401 else f'ERR: search instance Id: {instance_str}, response status: {resp.status}'
+                  print(msg)
+                  if triggered_by_cft:
+                      data = json.dumps(
+                          {'Status': 'FAILED', 'Reason': msg + ' CloudWatch Log Stream: ' + cxt.log_stream_name,
+                           'PhysicalResourceId': physicalResourceId or cxt.log_stream_name, 'StackId': event.get('StackId'), 'RequestId': event.get('RequestId'),
+                           'LogicalResourceId': event.get('LogicalResourceId'), 'NoEcho': False, 'Data': {'Value': msg}})
+                      try:
+                          resp = http.request('PUT', event.get('ResponseURL'), headers={'content-type': '', 'content-length': str(len(data))}, body=data)
+                          print('Status code: ' + str(resp.status) + ' Response Status: FAILED')
+                      except Exception as e: print('PUT request failed: ' + str(e))
+            - API_KEY: !Ref CloudOneAPIKEY
+      Handler: index.lambda_handler
+      Role:
+        Fn::GetAtt:
+          - LambdaUnregisterApplianceExecutionRole
+          - Arn
+      Runtime: python3.7
+    Type: AWS::Lambda::Function
+  LambdaUnregisterApplianceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+
+  LambdaUnregisterApplianceDefaultPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyDocument:
+          Statement:
+            - Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Effect: Allow
+              Resource: "*"
+          Version: "2012-10-17"
+        PolicyName: LambdaUnregisterApplianceDefaultPolicy
+        Roles:
+          - Ref: LambdaUnregisterApplianceExecutionRole
+
+  NetworkSecurityInvokeUnregisterLambdaPermission:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - LambdaUnregisterAppliance
+          - Arn
+      Principal: events.amazonaws.com
+    Type: AWS::Lambda::Permission
+
+  UnresgisterApplianceOnTermination:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: NetworkSecurity EC2 Termination CloudWatch Event
+      EventPattern:
+          source:
+             - aws.autoscaling
+          detail-type:
+              - EC2 Instance-terminate Lifecycle Action
+              - EC2 Instance Terminate Successful
+          detail:
+            AutoScalingGroupName:
+              - !Ref AutoScalingGroup
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt LambdaUnregisterAppliance.Arn
+          Id: UnregisterApplianceFunction
+
+# Helper function to multiply numbers
+  LambdaHelperExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: { Service: [ lambda.amazonaws.com ] }
+              Action: [ 'sts:AssumeRole' ]
+        Path: "/"
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  MultiplyFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        Handler: index.handler
+        Role: !GetAtt LambdaHelperExecutionRole.Arn
+        Code:
+          ZipFile: !Sub |
+            var response = require('cfn-response');
+            exports.handler = function(event, context) {
+              var result = parseInt(event.ResourceProperties.Op1) * parseInt(event.ResourceProperties.Op2.length);
+              response.send(event, context, response.SUCCESS, {Value: result, AzCount: event.ResourceProperties.Op2.length });
+            };
+        Runtime: nodejs12.x
+  MultiplyNumbers:
+      Type: Custom::Multiply
+      Properties:
+        ServiceToken: !GetAtt MultiplyFunction.Arn
+        Op1: !Ref NsvaCountPerAz
+        Op2: !Ref AvailabilityZones
+  NumberOfSubnets:
+    Type: Custom::NumberSubnets
+    Properties:
+      ServiceToken: !GetAtt MultiplyFunction.Arn
+      Op1: 3
+      Op2: !Ref AvailabilityZones
+
+  # Generate ExternalId for IAM Roles
+  GenerateExternalIdFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaHelperExecutionRole.Arn
+      Code:
+        ZipFile: !Sub |
+          import uuid
+          import cfnresponse
+          def handler(ev, ctx):
+              if ev.get('RequestType') == 'Create':
+                  external_id = uuid.uuid4()
+                  cfnresponse.send(ev, ctx, cfnresponse.SUCCESS, {'ExternalId': str(external_id)})
+              if ev.get('RequestType') in ['Delete', 'Update']:
+                  cfnresponse.send(ev, ctx, cfnresponse.SUCCESS, {})
+      Runtime: python3.7
+  GenerateExternalId:
+    Type: Custom::ExternalId
+    Properties:
+      ServiceToken: !GetAtt GenerateExternalIdFunction.Arn
+
+  DescribeVpceServiceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+  DescribeVpceServiceLambdaExecutionRoleDefaultPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ec2:DescribeVpcEndpointServiceConfigurations
+              - ec2:DescribeVpcEndpointServicePermissions
+              - ec2:DescribeVpcEndpointServices
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: DescribeVpceServiceLambdaExecutionRoleDefaultPolicy
+      Roles:
+        - Ref: DescribeVpceServiceLambdaExecutionRole
+  DescribeVpceServiceDescribeVpcEndpointServiceConfigurations:
+    Type: Custom::DescribeVpcEndpointServiceConfigurations
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - DescribeVpceServiceLambda
+          - Arn
+      Input:
+        Ref: GatewayLoadBalancerResourcesVpcEndpointService
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+  DescribeVpceServiceLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          def handler(event, context):
+              responseData = {}
+              responseStatus = cfnresponse.FAILED
+              print('Received event: {}'.format(json.dumps(event)))
+              if event["RequestType"] == "Delete":
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+              if event["RequestType"] == "Create":
+                  try:
+                      VpceServiceId = event["ResourceProperties"]["Input"]
+                  except Exception as e:
+                      print('VPC Endpoint Service Id retrieval failure')
+                  try:
+                      ec2 = boto3.client('ec2')
+                  except Exception as e:
+                      print('boto3.client failure: {}'.format(e))
+                  try:
+                      response = ec2.describe_vpc_endpoint_service_configurations(
+                          Filters=[
+                          {
+                          'Name': 'service-id',
+                          'Values': [VpceServiceId]
+                          }
+                          ]
+                          )
+                  except Exception as e:
+                      print('ec2.describe_vpc_endpoint_service_configurations failed')
+                  ServiceName=response['ServiceConfigurations'][0]['ServiceName']
+                  responseData['Data']=ServiceName
+                  responseStatus=cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+          - DescribeVpceServiceLambdaExecutionRole
+          - Arn
+      Runtime: python3.7
+      Description: Describes VPC Endpoint service
+      Timeout: 30
+    DependsOn:
+      - DescribeVpceServiceLambdaExecutionRoleDefaultPolicy
+      - DescribeVpceServiceLambdaExecutionRole
+
+
+Outputs:
+  VPCID:
+    Description: VPC Id
+    Value: !Ref SecurityVpc
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCId
+  VPCEndpointServiceName:
+    Description: VPC Endpoint Service Name
+    Value:
+      Fn::GetAtt:
+        - DescribeVpceServiceDescribeVpcEndpointServiceConfigurations
+        - Data
+  VPCEndpointServiceId:
+    Description: VPC Endpoint Service Id
+    Value: !Ref GatewayLoadBalancerResourcesVpcEndpointService
+    Export:
+      Name: !Sub ${AWS::StackName}-serviceId
+  GatewayLoadBalancer:
+    Description: Security VPC Gateway Load Balancer
+    Value: !GetAtt GatewayLoadBalancer.LoadBalancerFullName
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLB
+  GatewayLoadBalancerTG:
+    Description: NSVA Target Group Name
+    Value: !GetAtt GatewayLoadBalancerTargetGroup.TargetGroupFullName
+    Export:
+      Name: !Sub ${AWS::StackName}-NSVATg
+  GatewayLoadBalancerTGArn:
+    Description: NSVA Target Group Arn
+    Value: !Ref GatewayLoadBalancerTargetGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-NSVATgArn
+  NSVAlarmFunction:
+    Description: Lambda function that manages NSVA health alarms
+    Value: !GetAtt LambdaManageNsvaAlarms.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-AlarmFunction
+  ExternalId:
+    Description: ExternalId to use for cross-account IAM Roles
+    Value: !GetAtt GenerateExternalId.ExternalId
+    Export:
+      Name: !Sub ${AWS::StackName}-ExternalId
+
+Transform:
+  - CreateVPCResourcesPerAZ
