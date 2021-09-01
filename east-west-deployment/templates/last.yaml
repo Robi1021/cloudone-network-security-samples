@@ -42,15 +42,15 @@ Parameters:
   SecurityVpcStackName:
     Description: Enter the Stack Name of the Security VPC you would like to modify
     Type: String
-    Default: ew-c1nsSecurityVPCTemplate-11914A9ZY188D
+    Default: ew-c1nsSecurityVPCTemplate-HBHRMR2U67T3
   VPC:
     Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
     Type: String
-    Default: vpc-0ef3037d92943fd05
+    Default: vpc-0e583ac04d47e581e
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Type: String
-    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0d28eec766eabbd95
+    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0380faf12d6d53399
 
   # ------------------------------------------------------------#
   # Import BaseSite stack(BaseSite.yaml file)
@@ -295,6 +295,8 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
+              - ec2:AssociateRouteTable
+              - ec2:DisassociateRouteTable
               - ec2:CreateRoute
               - cloudFormation:DescribeStackResource
             Resource: "*"
@@ -331,8 +333,21 @@ Resources:
             natg_id1 = natg1['StackResourceDetail']['PhysicalResourceId']
             natg2 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2NATGateway')
             natg_id2 = natg2['StackResourceDetail']['PhysicalResourceId']
+
             igw = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVpcIGW')
             igw_id = igw['StackResourceDetail']['PhysicalResourceId']
+
+            public_subnet1_route_table_association = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1RouteTableAssociation')
+            public_subnet1_route_table_association_id = public_subnet1_route_table_association['StackResourceDetail']['PhysicalResourceId']
+            public_subnet2_route_table_association = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2Association')
+            public_subnet2_route_table_association_id = public_subnet2_route_table_association['StackResourceDetail']['PhysicalResourceId']
+            public_subnet1_route_table_assoc = ec2.RouteTableAssociation(public_subnet1_route_table_association_id)
+            public_subnet2_route_table_assoc = ec2.RouteTableAssociation(public_subnet2_route_table_association_id)
+
+            public_subnet1 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1')
+            public_subnet1_id = public_subnet1['StackResourceDetail']['PhysicalResourceId']
+            public_subnet2 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2')
+            public_subnet2_id = public_subnet2['StackResourceDetail']['PhysicalResourceId']
 
             logger.info("event: {}".format(event))
             status = cfnresponse.SUCCESS
@@ -346,13 +361,23 @@ Resources:
                     DestinationCidrBlock='0.0.0.0/0',
                     GatewayId=natg_id2
                 )
-                gwlbe_route_table1.create_route(
+                public_route_table1.create_route(
                     DestinationCidrBlock='0.0.0.0/0',
                     GatewayId=igw_id
                 )
-                gwlbe_route_table2.create_route(
+                public_route_table2.create_route(
                     DestinationCidrBlock='0.0.0.0/0',
                     GatewayId=igw_id
+                )
+
+                public_subnet1_route_table_assoc.delete()
+                public_subnet2_route_table_assoc.delete()
+
+                public_route_table1.associate_with_subnet(
+                    SubnetId=public_subnet1_id
+                )
+                public_route_table2.associate_with_subnet(
+                    SubnetId=public_subnet2_id
                 )
             except Exception:
               logger.error('Unhandled exception', exc_info=True)
