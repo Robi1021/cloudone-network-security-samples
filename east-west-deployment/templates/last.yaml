@@ -42,19 +42,59 @@ Parameters:
   SecurityVpcStackName:
     Description: Enter the Stack Name of the Security VPC you would like to modify
     Type: String
-    Default: ew-c1nsSecurityVPCTemplate-HBHRMR2U67T3
-  VPC:
-    Description: Enter the VPC ID where you want to deploy the GWLB Endpoint
+    Default: ew10-c1nsSecurityVPCTemplate-1GM4BQLWEICAT
+  SecurityVpcId:
+    Description: Enter the Security VPC ID
     Type: String
-    Default: vpc-0e583ac04d47e581e
+    Default: vpc-0cbe6a825d057b4f5
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Type: String
-    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0380faf12d6d53399
+    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0fc58cdae3b477c9c
 
   # ------------------------------------------------------------#
   # Import BaseSite stack(BaseSite.yaml file)
   # ------------------------------------------------------------#
+  AttackerVpcId:
+    Description: Enter the Attacker VPC ID
+    Type: String
+    Default: vpc-015dea7c63e7a1358
+  VictimVpcId:
+    Description: Enter the Victim VPC ID
+    Type: String
+    Default: vpc-0ee17b4bdfbe75d9e
+  AttackerPrivateSubnet1Id:
+    Description: Enter the Attacker private subnet 1 ID
+    Type: String
+    Default: subnet-079f008512550f1d6
+  AttackerPrivateSubnet2Id:
+    Description: Enter the Attacker private subnet 2 ID
+    Type: String
+    Default: subnet-0d60cb36309c4f2c5
+  VictimPrivateSubnet1Id:
+    Description: Enter the Victim private subnet 1 ID
+    Type: String
+    Default: subnet-07fac89ae9286dc61
+  VictimPrivateSubnet2Id:
+    Description: Enter the Victim private subnet 2 ID
+    Type: String
+    Default: subnet-0d01a9b9d07f4165d
+  AttackerPrivateSubnet1RouteTableId:
+    Description: Enter the Attacker private subnet 1 Route Table ID
+    Type: String
+    Default: rtb-0bb8718cf3955de76
+  AttackerPrivateSubnet2RouteTableId:
+    Description: Enter the Attacker private subnet 2 Route Table ID
+    Type: String
+    Default: rtb-0ceddfa92139ec6d1
+  VictimPrivateSubnet1RouteTableId:
+    Description: Enter the Victim private subnet 1 Route Table ID
+    Type: String
+    Default: rtb-0abe8c2cef6b9cc63
+  VictimPrivateSubnet2RouteTableId:
+    Description: Enter the Victim private subnet 2 Route Table ID
+    Type: String
+    Default: rtb-08bdf37dba7f4ba7e
   VictimVpcCIDR:
     Type: String
     Description: Enter the Victim VPC CIDR
@@ -69,13 +109,145 @@ Parameters:
     Default: 172.16.0.0/16
 
 Resources:
+  # -----------------------------------------------------------------------------------#
+  # Create TGW. TGW attachments, route tables to route outbound traffic to security VPC
+  # -----------------------------------------------------------------------------------#
+  SecurityTransitGateway:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      Description: TGW to route outbound traffic to security VPC
+      DefaultRouteTableAssociation: disable
+      DefaultRouteTablePropagation: disable
+  SecurityVpcAttachment:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties: 
+      SubnetIds: 
+        - !Ref TGWAttachmentSubnet1
+        - !Ref TGWAttachmentSubnet2
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-SecurityVpcAttachment
+      TransitGatewayId: !Ref SecurityTransitGateway
+      VpcId: !Ref SecurityVpcId
+  AttackerVpcAttachment:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties: 
+      SubnetIds: 
+        - !Ref AttackerPrivateSubnet1Id
+        - !Ref AttackerPrivateSubnet2Id
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-AttackerVpcAttachment
+      TransitGatewayId: !Ref SecurityTransitGateway
+      VpcId: !Ref AttackerVpcId
+  VictimVpcAttachment:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties: 
+      SubnetIds: 
+        - !Ref VictimPrivateSubnet1Id
+        - !Ref VictimPrivateSubnet2Id
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-VictimVpcAttachment
+      TransitGatewayId: !Ref SecurityTransitGateway
+      VpcId: !Ref VictimVpcId
+  IngressRouteTable:
+    Type: AWS::EC2::TransitGatewayRouteTable
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-IngressRouteTable
+      TransitGatewayId: !Ref SecurityTransitGateway
+  IngressRouteTablePublicRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      TransitGatewayAttachmentId: !Ref SecurityVpcAttachment
+      TransitGatewayRouteTableId: !Ref IngressRouteTable
+  IngressRouteTableAttackerAssociation: 
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties: 
+      TransitGatewayAttachmentId: !Ref AttackerVpcAttachment
+      TransitGatewayRouteTableId: !Ref IngressRouteTable
+  IngressRouteTableVictimAssociation: 
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties: 
+      TransitGatewayAttachmentId: !Ref VictimVpcAttachment
+      TransitGatewayRouteTableId: !Ref IngressRouteTable
+  EgressRouteTable:
+    Type: AWS::EC2::TransitGatewayRouteTable
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-EgressRouteTable
+      TransitGatewayId: !Ref SecurityTransitGateway
+  EgressRouteTableAttackerRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    Properties:
+      DestinationCidrBlock: !Ref AttackerVpcCIDR
+      TransitGatewayAttachmentId: !Ref AttackerVpcAttachment
+      TransitGatewayRouteTableId: !Ref EgressRouteTable
+  EgressRouteTableVictimRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    Properties:
+      DestinationCidrBlock: !Ref VictimVpcCIDR
+      TransitGatewayAttachmentId: !Ref VictimVpcAttachment
+      TransitGatewayRouteTableId: !Ref EgressRouteTable
+  EgressRouteTableAssociation: 
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties: 
+      TransitGatewayAttachmentId: !Ref SecurityVpcAttachment
+      TransitGatewayRouteTableId: !Ref EgressRouteTable
+  EgressRouteTableAttackerPropogation:
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties: 
+      TransitGatewayAttachmentId: !Ref AttackerVpcAttachment
+      TransitGatewayRouteTableId: !Ref EgressRouteTable
+  EgressRouteTableVictimPropogation:
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties: 
+      TransitGatewayAttachmentId: !Ref VictimVpcAttachment
+      TransitGatewayRouteTableId: !Ref EgressRouteTable
+  
+  #-------------------------------------------------------------#
+  # Modify private subnet route tables of attacker and victim vpc
   # ------------------------------------------------------------#
+  AttackerPrivateSubnet1TGWRoute:
+    DependsOn: AttackerVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref AttackerPrivateSubnet1RouteTableId
+      DestinationCidrBlock: "0.0.0.0/0"
+      TransitGatewayId: !Ref SecurityTransitGateway
+  AttackerPrivateSubnet2TGWRoute:
+    DependsOn: AttackerVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref AttackerPrivateSubnet2RouteTableId
+      DestinationCidrBlock: "0.0.0.0/0"
+      TransitGatewayId: !Ref SecurityTransitGateway
+  VictimPrivateSubnet1TGWRoute:
+    DependsOn: VictimVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref VictimPrivateSubnet1RouteTableId
+      DestinationCidrBlock: "0.0.0.0/0"
+      TransitGatewayId: !Ref SecurityTransitGateway
+  VictimPrivateSubnet2TGWRoute:
+    DependsOn: VictimVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref VictimPrivateSubnet2RouteTableId
+      DestinationCidrBlock: "0.0.0.0/0"
+      TransitGatewayId: !Ref SecurityTransitGateway
+  
+  #-------------------------------------------------------------#
   # Create GWLB Subnet for GWLB Endpoint
   # ------------------------------------------------------------#
   GWLBEndpointSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       CidrBlock: !Ref GWLBEndpointSubnet1CIDR
       AvailabilityZone: !Select
         - 0
@@ -87,7 +259,7 @@ Resources:
   GWLBEndpointSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       CidrBlock: !Ref GWLBEndpointSubnet2CIDR
       AvailabilityZone: !Select
         - 1
@@ -103,10 +275,24 @@ Resources:
   GWLBEndpointSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: GWLBEndpointSubnet1RouteTable
+  AttackerTGWSubnet1Route:
+    DependsOn: SecurityVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GWLBEndpointSubnet1RouteTable
+      DestinationCidrBlock: !Ref AttackerVpcCIDR
+      TransitGatewayId: !Ref SecurityTransitGateway
+  VictimTGWSubnet1Route:
+    DependsOn: SecurityVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GWLBEndpointSubnet1RouteTable
+      DestinationCidrBlock: !Ref VictimVpcCIDR
+      TransitGatewayId: !Ref SecurityTransitGateway
   GWLBEndpointSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -116,10 +302,24 @@ Resources:
   GWLBEndpointSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: GWLBEndpointSubnet2RouteTable
+  AttackerTGWSubnet2Route:
+    DependsOn: SecurityVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GWLBEndpointSubnet2RouteTable
+      DestinationCidrBlock: !Ref AttackerVpcCIDR
+      TransitGatewayId: !Ref SecurityTransitGateway
+  VictimTGWSubnet2Route:
+    DependsOn: SecurityVpcAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GWLBEndpointSubnet2RouteTable
+      DestinationCidrBlock: !Ref VictimVpcCIDR
+      TransitGatewayId: !Ref SecurityTransitGateway
   GWLBEndpointSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -136,7 +336,7 @@ Resources:
       SubnetIds:
         - !Ref GWLBEndpointSubnet1
       VpcEndpointType: GatewayLoadBalancer
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
 
   GWLBEndpoint2:
     Type: AWS::EC2::VPCEndpoint
@@ -145,8 +345,7 @@ Resources:
       SubnetIds:
         - !Ref GWLBEndpointSubnet2
       VpcEndpointType: GatewayLoadBalancer
-      VpcId: !Ref VPC
-
+      VpcId: !Ref SecurityVpcId
 
   # ------------------------------------------------------------#
   # Create TGW Attachment Subnet for TGW Attachment
@@ -154,7 +353,7 @@ Resources:
   TGWAttachmentSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       CidrBlock: !Ref TGWAttachmentSubnet1CIDR
       AvailabilityZone: !Select
         - 0
@@ -166,7 +365,7 @@ Resources:
   TGWAttachmentSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       CidrBlock: !Ref TGWAttachmentSubnet2CIDR
       AvailabilityZone: !Select
         - 1
@@ -182,12 +381,11 @@ Resources:
   TGWAttachmentSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: TGWAttachmentSubnet1RouteTable
   TGWAttachmentSubnet1Route:
-    DependsOn: GWLBEndpoint1
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref TGWAttachmentSubnet1RouteTable
@@ -201,12 +399,11 @@ Resources:
   TGWAttachmentSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: TGWAttachmentSubnet2RouteTable
   TGWAttachmentSubnet2Route:
-    DependsOn: GWLBEndpoint2
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref TGWAttachmentSubnet2RouteTable
@@ -224,19 +421,17 @@ Resources:
   PublicSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: PublicSubnet1RouteTable
   AttackerSubnet1Route:
-    DependsOn: GWLBEndpoint1
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicSubnet1RouteTable
       DestinationCidrBlock: !Ref AttackerVpcCIDR
       VpcEndpointId: !Ref GWLBEndpoint1
   VictimSubnet1Route:
-    DependsOn: GWLBEndpoint1
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicSubnet1RouteTable
@@ -245,19 +440,17 @@ Resources:
   PublicSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref SecurityVpcId
       Tags:
         - Key: Name
           Value: PublicSubnet2RouteTable
   AttackerSubnet2Route:
-    DependsOn: GWLBEndpoint2
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicSubnet2RouteTable
       DestinationCidrBlock: !Ref AttackerVpcCIDR
       VpcEndpointId: !Ref GWLBEndpoint2
   VictimSubnet2Route:
-    DependsOn: GWLBEndpoint2
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicSubnet2RouteTable
@@ -341,8 +534,12 @@ Resources:
             public_subnet1_route_table_association_id = public_subnet1_route_table_association['StackResourceDetail']['PhysicalResourceId']
             public_subnet2_route_table_association = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2Association')
             public_subnet2_route_table_association_id = public_subnet2_route_table_association['StackResourceDetail']['PhysicalResourceId']
+
             public_subnet1_route_table_assoc = ec2.RouteTableAssociation(public_subnet1_route_table_association_id)
             public_subnet2_route_table_assoc = ec2.RouteTableAssociation(public_subnet2_route_table_association_id)
+
+            public_subnet1_route_table_assoc_new = None
+            public_subnet2_route_table_assoc_new = None
 
             public_subnet1 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1')
             public_subnet1_id = public_subnet1['StackResourceDetail']['PhysicalResourceId']
@@ -373,12 +570,17 @@ Resources:
                 public_subnet1_route_table_assoc.delete()
                 public_subnet2_route_table_assoc.delete()
 
-                public_route_table1.associate_with_subnet(
-                    SubnetId=public_subnet1_id
-                )
-                public_route_table2.associate_with_subnet(
-                    SubnetId=public_subnet2_id
-                )
+                public_subnet1_route_table_assoc = public_route_table1.associate_with_subnet(
+                                                        SubnetId=public_subnet1_id
+                                                   )
+                public_subnet2_route_table_assoc = public_route_table2.associate_with_subnet(
+                                                        SubnetId=public_subnet2_id
+                                                   )
+              if event['RequestType'] == 'Delete':
+                if public_subnet1_route_table_assoc_new:
+                  public_subnet1_route_table_assoc_new.delete()
+                if public_subnet2_route_table_assoc_new:
+                  public_subnet2_route_table_assoc_new.delete()
             except Exception:
               logger.error('Unhandled exception', exc_info=True)
               status = cfnresponse.FAILED
@@ -406,10 +608,34 @@ Resources:
       ServiceToken: !GetAtt ModifyRouteTableLambdaFunction.Arn
 
 Outputs:
-  GWLBEndpointSubnet1Route:
+  SecurityTransitGateway:
+    Description: ID of Transit Gateway
+    Value: !Ref SecurityTransitGateway
+  SecurityVpcAttachment:
+    Description: ID of Security VPC attachement
+    Value: !Ref SecurityVpcAttachment
+  AttackerVpcAttachment:
+    Description: ID of Attacker VPC attachement
+    Value: !Ref AttackerVpcAttachment
+  IngressRouteTable:
+    Description: ID of Ingress Route table
+    Value: !Ref IngressRouteTable  
+  EgressRouteTable:
+    Description: ID of Egress Route table
+    Value: !Ref EgressRouteTable
+  VictimVpcAttachment:
+    Description: ID of Victim VPC attachement
+    Value: !Ref VictimVpcAttachment
+  GWLBEndpoint1:
+    Description: ID of GWLB Endpoint 1
+    Value: !Ref GWLBEndpoint1
+  GWLBEndpoint2:
+    Description: ID of GWLB Endpoint 1
+    Value: !Ref GWLBEndpoint2
+  GWLBEndpointSubnet1RouteTable:
     Description: ID of GWLB Subnet 1 Route Table
     Value: !Ref GWLBEndpointSubnet1RouteTable
-  GWLBEndpointSubnet2Route:
+  GWLBEndpointSubnet2RouteTable:
     Description: ID of GWLB Subnet 2 Route Table
     Value: !Ref GWLBEndpointSubnet2RouteTable
   GWLBEndpointSubnet1ID:
@@ -418,3 +644,21 @@ Outputs:
   GWLBEndpointSubnet2ID:
     Description: ID of GWLB Subnet 2
     Value: !Ref GWLBEndpointSubnet2
+  TGWAttachmentSubnet1RouteTable:
+    Description: ID of TGW Attachment Subnet 1 Route Table
+    Value: !Ref TGWAttachmentSubnet1RouteTable
+  TGWAttachmentSubnet2RouteTable:
+    Description: ID of TGW Attachment Subnet 2 Route Table
+    Value: !Ref TGWAttachmentSubnet2RouteTable
+  TGWAttachmentSubnet1ID:
+    Description: ID of TGW Attachement Subnet 1
+    Value: !Ref TGWAttachmentSubnet1
+  TGWAttachmentSubnet2ID:
+    Description: ID of TGW Attachement Subnet 2
+    Value: !Ref TGWAttachmentSubnet2
+  PublicSubnet1RouteTable:
+    Description: ID of Public Subnet 1 Route Table
+    Value: !Ref PublicSubnet1RouteTable
+  PublicSubnet2RouteTable:
+    Description: ID of Public Subnet 2 Route Table
+    Value: !Ref PublicSubnet1RouteTable
