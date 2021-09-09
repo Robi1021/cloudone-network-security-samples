@@ -42,15 +42,12 @@ Parameters:
   SecurityVpcStackName:
     Description: Enter the Stack Name of the Security VPC you would like to modify
     Type: String
-    Default: ew10-c1nsSecurityVPCTemplate-1GM4BQLWEICAT
   SecurityVpcId:
     Description: Enter the Security VPC ID
     Type: String
-    Default: vpc-0cbe6a825d057b4f5
   VPCEndpointServiceName:
     Description: VPC Endpoint Service Name
     Type: String
-    Default: com.amazonaws.vpce.us-west-1.vpce-svc-0fc58cdae3b477c9c
 
   # ------------------------------------------------------------#
   # Import BaseSite stack(BaseSite.yaml file)
@@ -58,43 +55,33 @@ Parameters:
   AttackerVpcId:
     Description: Enter the Attacker VPC ID
     Type: String
-    Default: vpc-015dea7c63e7a1358
   VictimVpcId:
     Description: Enter the Victim VPC ID
     Type: String
-    Default: vpc-0ee17b4bdfbe75d9e
   AttackerPrivateSubnet1Id:
     Description: Enter the Attacker private subnet 1 ID
     Type: String
-    Default: subnet-079f008512550f1d6
   AttackerPrivateSubnet2Id:
     Description: Enter the Attacker private subnet 2 ID
     Type: String
-    Default: subnet-0d60cb36309c4f2c5
   VictimPrivateSubnet1Id:
     Description: Enter the Victim private subnet 1 ID
     Type: String
-    Default: subnet-07fac89ae9286dc61
   VictimPrivateSubnet2Id:
     Description: Enter the Victim private subnet 2 ID
     Type: String
-    Default: subnet-0d01a9b9d07f4165d
   AttackerPrivateSubnet1RouteTableId:
     Description: Enter the Attacker private subnet 1 Route Table ID
     Type: String
-    Default: rtb-0bb8718cf3955de76
   AttackerPrivateSubnet2RouteTableId:
     Description: Enter the Attacker private subnet 2 Route Table ID
     Type: String
-    Default: rtb-0ceddfa92139ec6d1
   VictimPrivateSubnet1RouteTableId:
     Description: Enter the Victim private subnet 1 Route Table ID
     Type: String
-    Default: rtb-0abe8c2cef6b9cc63
   VictimPrivateSubnet2RouteTableId:
     Description: Enter the Victim private subnet 2 Route Table ID
     Type: String
-    Default: rtb-08bdf37dba7f4ba7e
   VictimVpcCIDR:
     Type: String
     Description: Enter the Victim VPC CIDR
@@ -491,6 +478,7 @@ Resources:
               - ec2:AssociateRouteTable
               - ec2:DisassociateRouteTable
               - ec2:CreateRoute
+              - ec2:DescribeRouteTables
               - cloudFormation:DescribeStackResource
             Resource: "*"
             Effect: Allow
@@ -538,9 +526,6 @@ Resources:
             public_subnet1_route_table_assoc = ec2.RouteTableAssociation(public_subnet1_route_table_association_id)
             public_subnet2_route_table_assoc = ec2.RouteTableAssociation(public_subnet2_route_table_association_id)
 
-            public_subnet1_route_table_assoc_new = None
-            public_subnet2_route_table_assoc_new = None
-
             public_subnet1 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet1')
             public_subnet1_id = public_subnet1['StackResourceDetail']['PhysicalResourceId']
             public_subnet2 = cf.describe_stack_resource(StackName=stack_name, LogicalResourceId='SecurityVPCPublicSubnet2')
@@ -577,10 +562,18 @@ Resources:
                                                         SubnetId=public_subnet2_id
                                                    )
               if event['RequestType'] == 'Delete':
-                if public_subnet1_route_table_assoc_new:
-                  public_subnet1_route_table_assoc_new.delete()
-                if public_subnet2_route_table_assoc_new:
-                  public_subnet2_route_table_assoc_new.delete()
+                public_route_table1.load()
+                public_route_table2.load()
+
+                public_subnet1_route_table_associations = public_route_table1.associations
+                public_subnet2_route_table_associations = public_route_table2.associations
+
+                if public_subnet1_route_table_associations:
+                  for association1 in public_subnet1_route_table_associations:
+                    association1.delete()
+                if public_subnet2_route_table_associations:
+                  for association2 in public_subnet2_route_table_associations:
+                    association2.delete()
             except Exception:
               logger.error('Unhandled exception', exc_info=True)
               status = cfnresponse.FAILED
