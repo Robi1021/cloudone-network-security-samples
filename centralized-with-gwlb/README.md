@@ -69,3 +69,35 @@ Below are the parameters for Quick Start:
 | SyslogPort  | 5140 | Port number used by Splunk Server |
 | SplunkPassword  | None | Password used by Splunk Server |
 | SplunkVersion  | 8.2 | Splunk Version |
+
+## Performing IPS and SQL Attacks
+
+Before performing each attack, please perform the following steps:
+1. Configure respective filter to Block and Log mode in Trend Micro Cloud One console. For detailed steps please check [Customize filter settings using the GUI](https://cloudone.trendmicro.com/docs/network-security/Customize_filter_settings_GUI/)
+2. Distribute profile with filter overrides. For detailed steps please check [Distribute filter overrides to your network](https://cloudone.trendmicro.com/docs/network-security/Filter_overrides_GUI/)
+
+### SQL Attacks
+
+SQL Attacks can be performed on DVWA server that is spun up as part of the Quick Start. In order to perform SQL Attacks, you wil need to first configure the application security level to "Low" in order for attacks to work properly. This can be done as follows:
+
+1. Login to DVWA application from your browser. You can retrieve the DVWAPublicIP from the "Output" tab of your DVWA CloudFormation stack. The URL would be `http://<DVWAPublicIP>`
+2. Login to Web Application using following default credentials
+    Username: `admin`
+    Password: `password`
+3. Go to DVWA Security menu on the side navigation panel
+4. Set Security Level to "Low" and hit Submit button
+
+Below are some SQL attacks you can perform on your DVWA server
+
+| Filter ID  | Attack                                                        |
+| :--------- | :------------------------------------------------------------ |
+| 3593      | 1. Go to SSL Injection menu on the side navigation panel<br />2. Enter `?id=a' UNION SELECT "text1","text2";-- -&Submit=Submit` in "User ID" text box and hit submit |
+| 12365      | On your browser, enter `http://<DVWAPublicIP>/vulnerabilities/xss_d/?default=English%3Cscript%3Ealert(1)%3C/script%3E` |
+
+### Inbound Attacks
+
+Inbound attacks could be performed on any publicly accessible webserver. In this case, we can perform a simple Shell Shock attack on our DVWA or Web Server created
+
+| Filter ID  | Attack                                                             |
+| :--------- | :----------------------------------------------------------------- |
+| 16798      | `curl -H "User-Agent: () { :; }; /bin/eject" http://<WebServerALBHostname>` |

