@@ -17,7 +17,7 @@ After deploying this Quick Start, you will be able to:
 
 *Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
 
-`https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/east-west-deployment/templates/Master.yaml`
+`https://quickstart-network-security.s3.us-west-1.amazonaws.com/east-west-deployment/templates/Master.yaml`
 ### 1. Deploy Network Security East West Outbound Only Inspection
 The Quick Start deploys Security VPC for East West Outbound Only inspection in multiple AZs using Transit Gateways. Users are expected to deploy attacker and victim VPCs manually (instructions are given below)
 
@@ -31,7 +31,7 @@ Below are the parameters for Quick Start:
 | Parameter label (name) | Default        | Description                                                    |
 | :----------------------| :------------- | :------------------------------------------------------------- |
 | AllowIP    | 127.0.0.1/32   | Only the IP entered here will be able to access the web server |
-| BucketName | quickstart-ns-edge-deployment   | Name of the bucket where the template is placed |
+| BucketName | quickstart-network-security   | Name of the bucket where the template is placed |
 | BucketPrefix    | centralized-with-gwlb/ | Bucket prefix |
 | BucketRegion    | us-west-1| Bucket region |
 | DVWAInstanceType | t3.micro | Amazon EC2 instance type for the DVWA instances |

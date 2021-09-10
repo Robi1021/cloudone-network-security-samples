@@ -156,7 +156,7 @@ Parameters:
   BucketName:
     Description: Name of the bucket where the template is placed
     Type: String
-    Default: 'quickstart-ns-edge-deployment'
+    Default: 'quickstart-network-security'
   BucketPrefix:
     Description: Bucket prefix
     Type: String
