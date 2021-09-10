@@ -21,7 +21,7 @@ After deploying this Quick Start, you will be able to:
 
 *Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
 
-`https://quickstart-ns-edge-deployment.s3.us-west-1.amazonaws.com/edge-deployment/templates/edge-deployment.template`
+`https://quickstart-network-security.s3.us-west-1.amazonaws.com/edge-deployment/templates/edge-deployment.template`
 ### 1. Deploy sample Wordpress environment with DVWA 
 The Quick Start offers two deployment options:
 
@@ -103,8 +103,8 @@ Below are some SQL attacks you can perform on your DVWA server
 
 ### Inbound Attacks
 
-Inbound attacks could be performed on any publically accessible webserver. In this case, we can perform a simple Shell Shock attack on our DVWA server
+Inbound attacks could be performed on any publicly accessible webserver. In this case, we can perform a simple Shell Shock attack on our DVWA server
 
 | Filter ID  | Attack                                                             |
 | :--------- | :----------------------------------------------------------------- |
-| 16798      | `curl -H "User-Agent: () { :; }; /bin/eject" http://20.44.162.152` |
+| 16798      | `curl -H "User-Agent: () { :; }; /bin/eject" http://<DVWAServerIP>` |

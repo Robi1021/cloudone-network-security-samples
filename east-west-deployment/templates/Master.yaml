@@ -115,17 +115,7 @@ Metadata:
           - DVWAInstanceType
           - sshKeyPairName
           - SSMAccess
-          - DeployHTTPS
           - DeployC1NS
-          - DeployC1NSHA
-          - DeploySplunk
-      - 
-        Label:
-          default: If you set the DeployHTTPS parameter to true, the following parameters are required
-        Parameters:
-          - DomainName
-          - SubDomain
-          - HostZoneID
       - 
         Label:
           default: If you set the DeployC1NS parameter to true, the following parameters are required
@@ -135,13 +125,6 @@ Metadata:
           - SecurityVPCCIDR
           - NsvaCountPerAz
           - EnableInspectionLogs
-      - 
-        Label:
-          default: If you set the DeploySplunk parameter to true, the following parameters are required
-        Parameters:
-          - SyslogPort
-          - SplunkPassword
-          - SplunkVersion
 
 Parameters:
   # ------------------------------------------------------------#
@@ -156,11 +139,11 @@ Parameters:
   BucketName:
     Description: Name of the bucket where the template is placed
     Type: String
-    Default: 'quickstart-ns-edge-deployment'
+    Default: 'quickstart-network-security'
   BucketPrefix:
     Description: Bucket prefix
     Type: String
-    Default: 'centralized-with-gwlb/'
+    Default: 'east-west-deployment/'
   BucketRegion:
     Description: Bucket region
     Type: String
@@ -200,41 +183,11 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
     Default: true
-  DeployHTTPS:
-    Description: If enabled, The HTTPS site will be deployed.
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
   DeployC1NS:
     Description: If enabled, C1NS with be deployed in centralized Security VPC
     Type: String
     AllowedValues: [true, false]
     Default: true
-  DeployC1NSHA:
-    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, C1NS HA deployed."
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
-  DeploySplunk:
-    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, Splunk Server will be deployed."
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
-  # ------------------------------------------------------------#
-  # If you set the DeployHTTPS parameter to true, the following parameters are required
-  # ------------------------------------------------------------#
-  DomainName:
-    Description: Domain name to be used for the website.
-    Type: String
-    Default: ''
-  SubDomain:
-    Description: Subdomain to be used for the ALB.
-    Type: String
-    Default: ''
-  HostZoneID:
-    Description: ID of the HostZone where the domain you want to use is registered.
-    Type: String
-    Default: ''
   # ------------------------------------------------------------#
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
@@ -273,51 +226,83 @@ Parameters:
     Type: String
     AllowedValues: [ true, false ]
     Default: false
-  # ------------------------------------------------------------#
-  # If you set the DeploySplunk parameter to true, the following parameters are required
-  # ------------------------------------------------------------#
-  SyslogPort:
-    Description: Port number used by Splunk Server
-    Type: String
-    Default: '5140'
-  SplunkPassword:
-    Description: Password used by Splunk Server
-    Type: String
-    NoEcho: true
-    Default: ''
-  SplunkVersion:
-    Description: Splunk Version
-    Type: String
-    Default: '8.2'
-
 # ------------------------------------------------------------#
 # Conditions
 # ------------------------------------------------------------#
 Conditions:
-  DeployHTTPS:
-    !Equals [true, !Ref DeployHTTPS]
   DeployC1NS:
     !Equals [true, !Ref DeployC1NS]
-  DeployC1NSHAmodel:
-    !Equals [true, !Ref DeployC1NSHA]
-  DeployC1NSHA: !And
-    - !Condition DeployC1NS
-    - !Condition DeployC1NSHAmodel
-  DeploySplunksrv:
-    !Equals [true, !Ref DeploySplunk]
-  DeploySplunk: !And
-    - !Condition DeployC1NS
-    - !Condition DeploySplunksrv
 
 Resources:
   # ------------------------------------------------------------#
-  # Create Base VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
+  # Create Victim VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
   # ------------------------------------------------------------#
-  BaseVPC:
+  VictimVpc:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
       Parameters:
+        VPCCIDR: 192.168.0.0/16
+        PrivateSubnet1ACIDR: 192.168.1.0/24
+        PrivateSubnet2ACIDR: 192.168.2.0/24 
+        PublicSubnet1CIDR: 192.168.11.0/24
+        PublicSubnet2CIDR: 192.168.12.0/24
+        NumberOfAZs: 2
+        AvailabilityZones:
+          Fn::Join:
+            - ","
+            - - Fn::Select: 
+                - 0
+                - Fn::GetAZs: !Ref AWS::Region
+              - Fn::Select: 
+                - 1
+                - Fn::GetAZs: !Ref AWS::Region
+  # ------------------------------------------------------------#
+  # Create Victim Site (EC2, SecurityGroup)
+  # ------------------------------------------------------------#
+  Victim:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
+      Parameters:
+        ImageId: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - ImageId
+        AllowIP: !Ref AllowIP
+        NeedSSMAccess: !Ref SSMAccess
+        VPCId: !GetAtt VictimVpc.Outputs.VPCID
+        PrivateSubnet1ID: !GetAtt VictimVpc.Outputs.PrivateSubnet1AID
+        WebServerIngressAllowCIDR: 172.16.0.0/16
+  # ------------------------------------------------------------#
+  # Create DVWA (DVWA Instance)
+  # ------------------------------------------------------------#
+  DVWA:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
+      Parameters:
+        DVWAInstanceType: !Ref DVWAInstanceType
+        KeyPairName: !Ref sshKeyPairName
+        PublicSubnet1ID: !GetAtt VictimVpc.Outputs.PublicSubnet1ID
+        QSS3BucketName: !Ref BucketName
+        QSS3KeyPrefix: !Ref BucketPrefix
+        DVWARemoteAccessCIDR: !Ref AllowIP
+        QSS3BucketRegion: !Ref BucketRegion
+        VPCID: !GetAtt VictimVpc.Outputs.VPCID
+  # ------------------------------------------------------------#
+  # Create Attacker VPC (VPC, IGW, Subnet, RouteTable, EIP, NatGW)
+  # ------------------------------------------------------------#
+  AttackerVpc:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/aws-vpc.template.yaml
+      Parameters:
+        VPCCIDR: 172.16.0.0/16
+        PrivateSubnet1ACIDR: 172.16.1.0/24
+        PrivateSubnet2ACIDR: 172.16.2.0/24 
+        PublicSubnet1CIDR: 172.16.11.0/24
+        PublicSubnet2CIDR: 172.16.12.0/24
         NumberOfAZs: 2
         AvailabilityZones:
           Fn::Join:
@@ -330,26 +315,9 @@ Resources:
                 - Fn::GetAZs: !Ref AWS::Region
 
   # ------------------------------------------------------------#
-  # Create DVWA (DVWA Instance)
+  # Create Attacker Site (EC2, SecurityGroup)
   # ------------------------------------------------------------#
-  DVWA:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/dvwa.yaml
-      Parameters:
-        DVWAInstanceType: !Ref DVWAInstanceType
-        KeyPairName: !Ref sshKeyPairName
-        PublicSubnet1ID: !GetAtt BaseVPC.Outputs.PublicSubnet1ID
-        QSS3BucketName: !Ref BucketName
-        QSS3KeyPrefix: !Ref BucketPrefix
-        DVWARemoteAccessCIDR: !Ref AllowIP
-        QSS3BucketRegion: !Ref BucketRegion
-        VPCID: !GetAtt BaseVPC.Outputs.VPCID
-
-  # ------------------------------------------------------------#
-  # Create Base Site (EC2, SecurityGroup)
-  # ------------------------------------------------------------#
-  BaseSite:
+  Attacker:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/BaseSite.yaml
@@ -360,39 +328,10 @@ Resources:
           - ImageId
         AllowIP: !Ref AllowIP
         NeedSSMAccess: !Ref SSMAccess
-        VPCId: !GetAtt BaseVPC.Outputs.VPCID
-        PrivateSubnet1ID: !GetAtt BaseVPC.Outputs.PrivateSubnet1AID
-        PublicSubnet1ID: !GetAtt BaseVPC.Outputs.PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt BaseVPC.Outputs.PublicSubnet2ID
-
-  # ------------------------------------------------------------#
-  # Create LoadBalancer and https site (ALB, TargetGroup, Listener, ACM)
-  # ------------------------------------------------------------#
-  AddALB:
-    Condition: DeployHTTPS
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/AddALB.yaml
-      Parameters:
-        DomainName: !Ref DomainName
-        SubDomain: !Ref SubDomain
-        HostZoneID: !Ref HostZoneID
-        TargetGroupID: !GetAtt BaseSite.Outputs.TargetGroupID
-        ALBID: !GetAtt BaseSite.Outputs.ALBID
-        HostedZoneId: !GetAtt BaseSite.Outputs.HostedZoneId
-        DNSName: !GetAtt BaseSite.Outputs.HTTPWebSiteURL
-
-  # ------------------------------------------------------------#
-  # Create RemoveRecord Function
-  # ------------------------------------------------------------#
-  RemoveRecord:
-    Condition: DeployHTTPS
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/RemoveRecord.yaml
-      Parameters:
-        HostZoneID: !Ref HostZoneID
-
+        VPCId: !GetAtt AttackerVpc.Outputs.VPCID
+        PrivateSubnet1ID: !GetAtt AttackerVpc.Outputs.PrivateSubnet1AID
+        WebServerIngressAllowCIDR: 192.168.0.0/16
+  
   # ------------------------------------------------------------#
   # Create c1ns macro template
   # ------------------------------------------------------------#
@@ -409,7 +348,7 @@ Resources:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/security_vpc.yml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/security_vpc.yml
       Parameters:
         sshKeyPairName: !Ref sshKeyPairName
         CloudOneAPIKEY: !Ref CloudOneAPIKEY
@@ -433,50 +372,34 @@ Resources:
     DependsOn: c1nsMacroTemplate
 
   # ------------------------------------------------------------#
-  # Create the IAM role stack for cross-account deployments 
+  # Create Last modify setting template (modify route table)
   # ------------------------------------------------------------#
-  CrossAccountIAMTemplate:
-    Condition: DeployC1NSHA
+  ModifyRTTemplate:
+    Condition: DeployC1NS
+    DependsOn: c1nsSecurityVPCTemplate
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/ha_lambda_cross_account_iam.yaml
+      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
       Parameters:
-        SecurityVpcAccountId: !Ref "AWS::AccountId"
-        ExternalId: !GetAtt c1nsSecurityVPCTemplate.Outputs.ExternalId
-    DependsOn: ModifyRTTemplate
-
-  # ------------------------------------------------------------#
-  # Create HA stack deployments
-  # ------------------------------------------------------------#
-  HaLambdaTemplate:
-    Condition: DeployC1NSHA
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/ha_resources_vpc_ingress.yaml
-      Parameters:
-        securityVpcStackName: 
+        AttackerVpcId: !GetAtt AttackerVpc.Outputs.VPCID
+        VictimVpcId: !GetAtt VictimVpc.Outputs.VPCID
+        AttackerPrivateSubnet1Id: !GetAtt AttackerVpc.Outputs.PrivateSubnet1AID
+        AttackerPrivateSubnet2Id: !GetAtt AttackerVpc.Outputs.PrivateSubnet2AID
+        VictimPrivateSubnet1Id: !GetAtt VictimVpc.Outputs.PrivateSubnet1AID
+        VictimPrivateSubnet2Id: !GetAtt VictimVpc.Outputs.PrivateSubnet2AID
+        AttackerPrivateSubnet1RouteTableId: !GetAtt AttackerVpc.Outputs.PrivateSubnet1ARouteTable
+        AttackerPrivateSubnet2RouteTableId: !GetAtt AttackerVpc.Outputs.PrivateSubnet2ARouteTable
+        VictimPrivateSubnet1RouteTableId: !GetAtt VictimVpc.Outputs.PrivateSubnet1ARouteTable
+        VictimPrivateSubnet2RouteTableId: !GetAtt VictimVpc.Outputs.PrivateSubnet2ARouteTable
+        VictimVpcCIDR: 192.168.0.0/16
+        AttackerVpcCIDR: 172.16.0.0/16
+        SecurityVpcStackName: 
           Fn::Select:
             - 1
             - Fn::Split:
               - /
               - !Ref c1nsSecurityVPCTemplate
-    DependsOn: CrossAccountIAMTemplate
-
-  # ------------------------------------------------------------#
-  # Create Last modify setting template (modify route table)
-  # ------------------------------------------------------------#
-  ModifyRTTemplate:
-    Condition: DeployC1NS
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/last.yaml
-      Parameters:
-        VPC: !GetAtt BaseVPC.Outputs.VPCID
-        InternetGateway: !GetAtt BaseVPC.Outputs.IGWID
-        BasePublicSubnet1CIDR: !GetAtt BaseVPC.Outputs.PublicSubnet1CIDR
-        BasePublicSubnet2CIDR: !GetAtt BaseVPC.Outputs.PublicSubnet2CIDR
-        BasePublicSubnet1RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet1RouteTable
-        BasePublicSubnet2RouteTable: !GetAtt BaseVPC.Outputs.PublicSubnet2RouteTable
+        SecurityVpcId: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCID
         VPCEndpointServiceName: !GetAtt c1nsSecurityVPCTemplate.Outputs.VPCEndpointServiceName
         AvailabilityZones:
           Fn::Join:
@@ -488,59 +411,19 @@ Resources:
                 - 1
                 - Fn::GetAZs: !Ref AWS::Region
 
-  # ------------------------------------------------------------#
-  # Create Splunk Server
-  # ------------------------------------------------------------#
-  SplunkTemplate:
-    Condition: DeploySplunk
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://${BucketName}.s3.${BucketRegion}.amazonaws.com/${BucketPrefix}templates/splunk.yaml
-      Parameters:
-        VPCID: !GetAtt BaseVPC.Outputs.VPCID
-        VPCCIDR: !GetAtt BaseVPC.Outputs.VPCCIDR
-        RTID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1Route
-        AllowIP: !Ref AllowIP
-        SyslogPort: !Ref SyslogPort
-        SecurityVPCCIDR: !Ref SecurityVPCCIDR
-        ImageId: !FindInMap
-          - RegionMap
-          - !Ref 'AWS::Region'
-          - ImageId
-        PublicSubnet1ID: !GetAtt ModifyRTTemplate.Outputs.PublicSubnet1ID
-        SplunkPassword: !Ref SplunkPassword
-        SplunkVersion: !Ref SplunkVersion
-        c1nsStackName: 
-          Fn::Select:
-            - 1
-            - Fn::Split:
-              - /
-              - !Ref c1nsSecurityVPCTemplate
-        InstanceProfile: !GetAtt BaseSite.Outputs.InstanceProfile
-        NeedSSMAccess: !Ref SSMAccess
-
 # ------------------------------------------------------------#
 # Output Site URLs
 # ------------------------------------------------------------#
 Outputs:
-  HTTPWebSiteURL:
-    Value: !GetAtt BaseSite.Outputs.HTTPWebSiteURL
-    Description: HTTP site URL
-  HTTPSWebSiteURL:
-    Condition: DeployHTTPS
-    Value: !GetAtt AddALB.Outputs.HTTPSWebSiteURL
-    Description: HTTPS site URL
-  SplunkURL:
-    Condition: DeploySplunk
-    Value: !GetAtt SplunkTemplate.Outputs.SplunkURL
-    Description: Splunk URL
-  SplunkInternalIP:
-    Condition: DeploySplunk
-    Value: !GetAtt SplunkTemplate.Outputs.SplunkInternalIP
-    Description: Splunk private IP address  
+  AttackerWebServerIP:
+    Value: !GetAtt Attacker.Outputs.WebServerIP
+    Description: Attacker Webserver IP
+  VictimWebServerIP:
+    Value: !GetAtt Victim.Outputs.WebServerIP
+    Description: Victim Webserver IP
   DVWAIP:
     Value: !GetAtt DVWA.Outputs.DVWAPublicIP
     Description: DVWA instance Public IP 
   DVWADeployment:
     Value: !GetAtt DVWA.Outputs.Postdeployment
-    Description: See the deployment guide for post-deployment steps 
+    Description: See the deployment guide for post-deployment steps

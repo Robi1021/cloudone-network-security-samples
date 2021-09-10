@@ -1116,13 +1116,6 @@ Resources:
           Value: Private subnet 1A
         - Key: Network
           Value: Private
-  PrivateSubnet1ARoute:
-    Condition: NATGatewaysCondition
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref 'PrivateSubnet1ARouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
-      NatGatewayId: !Ref 'NATGateway1'
   PrivateSubnet1ARouteTableAssociation:
     Condition: PrivateSubnetsCondition
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -1139,13 +1132,6 @@ Resources:
           Value: Private subnet 2A
         - Key: Network
           Value: Private
-  PrivateSubnet2ARoute:
-    Condition: NATGatewaysCondition
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref 'PrivateSubnet2ARouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
-      NatGatewayId: !Ref 'NATGateway2'
   PrivateSubnet2ARouteTableAssociation:
     Condition: PrivateSubnetsCondition
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -1547,6 +1533,10 @@ Resources:
     Properties:
       AllocationId: !GetAtt 'NAT1EIP.AllocationId'
       SubnetId: !Ref 'PublicSubnet1'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NATG1'
+
   NATGateway2:
     Condition: NATGatewaysCondition
     DependsOn: VPCGatewayAttachment
@@ -1554,6 +1544,9 @@ Resources:
     Properties:
       AllocationId: !GetAtt 'NAT2EIP.AllocationId'
       SubnetId: !Ref 'PublicSubnet2'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NATG2'
   NATGateway3:
     Condition: NATGateways&3AZCondition
     DependsOn: VPCGatewayAttachment
@@ -1561,6 +1554,9 @@ Resources:
     Properties:
       AllocationId: !GetAtt 'NAT3EIP.AllocationId'
       SubnetId: !Ref 'PublicSubnet3'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NATG3'
   NATGateway4:
     Condition: NATGateways&4AZCondition
     DependsOn: VPCGatewayAttachment
@@ -1568,6 +1564,9 @@ Resources:
     Properties:
       AllocationId: !GetAtt 'NAT4EIP.AllocationId'
       SubnetId: !Ref 'PublicSubnet4'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NATG4'
   S3VPCEndpoint:
     Condition: PrivateSubnetsCondition
     Type: AWS::EC2::VPCEndpoint
