@@ -1,5 +1,15 @@
 # centralized-deployment-with-gwlb
 
+## Purpose and Objectives
+
+This Quick Start deploys a security VPC with Apache web server for inbound traffic inspection. It also deploys Damn Vulnerable Web Application (DVWA) in one of the public subnets. The purpose of this quickstart is to provide users a sample environment where they can deploy Network Security Virtual Appliance to protect their resources from inbound internet traffic. In this deployment, we use Gateway Load Balancer to route traffic to Network Security Appliance.
+
+After deploying this Quick Start, you will be able to:
+
+- Deploy Network Security Virtual Appliance (NSVA) as [Centralized Inbound Protection](https://cloudone.trendmicro.com/docs/network-security/option2/)
+- Configure your security profile in Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from inbound attacks
+- Perform various inbound and outbound attacks to validate protection.
+- Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.
 ## Network Architecture
 
 <img src="docs/centralized-with-gwlb.png" name="Network Security Centralized with Gateway Load Balancer Deployment">

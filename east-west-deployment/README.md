@@ -1,5 +1,14 @@
 # east-west-deployment
+## Purpose and Objectives
 
+This Quick Start deploys attacker, victim and security VPC to demonstrate outbound protection with Network Security Appliance. It also deploys Damn Vulnerable Web Application (DVWA) in one of the public subnets on victim VPC. The purpose of this quickstart is to provide users a sample environment where they can deploy Network Security Virtual Appliance for east-west/ lateral traffic between various workload VPCs using Transit Gateway. In this deployment, we use Gateway Load Balancer and Transit Gateway to route traffic to Network Security Appliance.
+
+After deploying this Quick Start, you will be able to:
+
+- Deploy Network Security Virtual Appliance (NSVA) as [East-West Outbound Protection](https://cloudone.trendmicro.com/docs/network-security/option3/)
+- Configure your security profile in Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from outbound attacks.
+- Perform various inbound and outbound attacks to validate protection.
+- Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.
 ## Network Architecture
 
 <img src="docs/east-west.png" name="Network Security East West Deployment">
