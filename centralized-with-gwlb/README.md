@@ -29,6 +29,7 @@ Below are the parameters for Quick Start:
 | BucketName | quickstart-ns-edge-deployment   | Name of the bucket where the template is placed |
 | BucketPrefix    | centralized-with-gwlb/ | Bucket prefix |
 | BucketRegion    | us-west-1| Bucket region |
+| DVWAInstanceType | t3.micro | Amazon EC2 instance type for the DVWA instances |
 | sshKeyPairName  | None| [Required: 'DeployC1NS' must be set to true] SSH Key of the EC2 you are using |
 | SSMAccess    | true | If enabled, SSM access to the instance will be available |
 | DeployHTTPS    | false | If enabled, The HTTPS site will be deployed |

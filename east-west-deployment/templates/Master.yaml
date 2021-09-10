@@ -116,7 +116,6 @@ Metadata:
           - sshKeyPairName
           - SSMAccess
           - DeployC1NS
-          - DeployC1NSHA
       - 
         Label:
           default: If you set the DeployC1NS parameter to true, the following parameters are required
@@ -189,11 +188,6 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
     Default: true
-  DeployC1NSHA:
-    Description: "[Required: 'DeployC1NS' must be set to true] If enabled, C1NS HA deployed."
-    Type: String
-    AllowedValues: [true, false]
-    Default: false
   # ------------------------------------------------------------#
   # If you set the DeployC1NS parameter to true, the following parameters are required
   # ------------------------------------------------------------#
@@ -238,11 +232,6 @@ Parameters:
 Conditions:
   DeployC1NS:
     !Equals [true, !Ref DeployC1NS]
-  DeployC1NSHAmodel:
-    !Equals [true, !Ref DeployC1NSHA]
-  DeployC1NSHA: !And
-    - !Condition DeployC1NS
-    - !Condition DeployC1NSHAmodel
 
 Resources:
   # ------------------------------------------------------------#
@@ -381,36 +370,6 @@ Resources:
         NsvaCountPerAz: !Ref NsvaCountPerAz
         EnableInspectionLogs: !Ref EnableInspectionLogs
     DependsOn: c1nsMacroTemplate
-
-  # ------------------------------------------------------------#
-  # Create the IAM role stack for cross-account deployments 
-  # ------------------------------------------------------------#
-  CrossAccountIAMTemplate:
-    Condition: DeployC1NSHA
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/ha_lambda_cross_account_iam.yaml
-      Parameters:
-        SecurityVpcAccountId: !Ref "AWS::AccountId"
-        ExternalId: !GetAtt c1nsSecurityVPCTemplate.Outputs.ExternalId
-    DependsOn: ModifyRTTemplate
-
-  # ------------------------------------------------------------#
-  # Create HA stack deployments
-  # ------------------------------------------------------------#
-  HaLambdaTemplate:
-    Condition: DeployC1NSHA
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/ha_resources_vpc_ingress.yaml
-      Parameters:
-        securityVpcStackName: 
-          Fn::Select:
-            - 1
-            - Fn::Split:
-              - /
-              - !Ref c1nsSecurityVPCTemplate
-    DependsOn: CrossAccountIAMTemplate
 
   # ------------------------------------------------------------#
   # Create Last modify setting template (modify route table)
