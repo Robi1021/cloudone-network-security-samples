@@ -6,7 +6,7 @@ This Quick Start deploys a security VPC with Apache web server for inbound traff
 
 After deploying this Quick Start, you will be able to:
 
-- Deploy Network Security Virtual Appliance (NSVA) as [Centralized Inbound Protection](https://cloudone.trendmicro.com/docs/network-security/option2/)
+- Deploy Network Security Virtual Appliance (NSVA) as [Centralized Inbound Protection](https://cloudone.trendmicro.com/docs/network-security/GWLB_CFdeploy1/)
 - Configure your security profile in Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from inbound attacks
 - Perform various inbound and outbound attacks to validate protection.
 - Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.

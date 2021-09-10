@@ -5,7 +5,7 @@ This Quick Start deploys attacker, victim and security VPC to demonstrate outbou
 
 After deploying this Quick Start, you will be able to:
 
-- Deploy Network Security Virtual Appliance (NSVA) as [East-West Outbound Protection](https://cloudone.trendmicro.com/docs/network-security/option3/)
+- Deploy Network Security Virtual Appliance (NSVA) as [East-West Outbound Protection](https://cloudone.trendmicro.com/docs/network-security/GWLB_CFdeploy2/)
 - Configure your security profile in Network Security console by distributing various Intrustion Prevention (IPS), Geo Filters to prevent your resources from outbound attacks.
 - Perform various inbound and outbound attacks to validate protection.
 - Access logs of Network Security Virtual Applicance (NSVA) to verify which filters are getting triggered.
