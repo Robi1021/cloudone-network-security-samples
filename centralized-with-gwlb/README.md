@@ -18,7 +18,7 @@ After deploying this Quick Start, you will be able to:
 
 *Note: You can deploy this Quick Start using the default S3 template link below if you don't wish to make changes to this code and deploy with your own customized changes:*
 
-`https://quickstart-network-security.s3.us-west-1.amazonaws.com/centralized-with-gwlb/Master.yaml`
+`https://quickstart-network-security.s3.us-west-1.amazonaws.com/centralized-with-gwlb/templates/Master.yaml`
 ### 1. Deploy Network Security with Centralized Security VPC
 The Quick Start offers two deployment options:
 
