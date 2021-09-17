@@ -136,6 +136,44 @@ Mappings:
       DvwaAMI: ami-0b9e4c39f148b835c
     us-west-2: #Oregon
       DvwaAMI: ami-0adb84ff1c722394f
+    af-south-1: #Cape Town
+      DvwaAMI: ami-0ef071ad81bde0437
+    ap-east-1: #Hong Kong
+      DvwaAMI: ami-00d021ed3c5b0f047
+    ap-south-1: #Mumbai
+      DvwaAMI: ami-0dc33407bbfb0381b
+    ap-northeast-1: #Tokio
+      DvwaAMI: ami-0539984a3053a7c65
+    ap-northeast-2: #Seoul
+      DvwaAMI: ami-0a6da91fc1b4c3050
+    ap-northeast-3: #Osaka
+      DvwaAMI: ami-04325f0723618d365
+    ap-southeast-1: #Singapore
+      DvwaAMI: ami-093e255d56ca99fe0
+    ap-southeast-2: #Sydney
+      DvwaAMI: ami-03877a0f8b097ea90
+    ca-central-1: #Canada
+      DvwaAMI: ami-0cd5aadd5da8446d7
+    cn-north-1: # Not created yet
+      DvwaAMI: ami-038255e61d99fa5b7
+    cn-northwest-1: # Not created yet
+      DvwaAMI: ami-038255e61d99fa5b7
+    eu-central-1: #Frankfurt
+      DvwaAMI: ami-08b5eadce176a41de
+    eu-west-1: #Ireland
+      DvwaAMI: ami-022b465e35144bcf0
+    eu-west-2: #London
+      DvwaAMI: ami-067257ddeaaec207f
+    eu-west-3: #Paris
+      DvwaAMI: ami-038255e61d99fa5b7
+    eu-south-1: #Milan
+      DvwaAMI: ami-01d5f2922f887f140
+    eu-north-1: #Stockholm
+      DvwaAMI: ami-0d6ee1c8580224f4e
+    me-south-1: #Bahrein
+      DvwaAMI: ami-0db951eb511fd6a03
+    sa-east-1: #Sao Paulo
+      DvwaAMI: ami-06e1409820ba1c928
 Conditions:
   UsingDefaultBucket: !Equals
     - !Ref QSS3BucketName
