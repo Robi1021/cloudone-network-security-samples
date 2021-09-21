@@ -409,7 +409,7 @@ Resources:
     Condition: DeployC1NS
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/security_vpc.yml
+      TemplateURL: https://trendmicro-tippingpoint.s3.amazonaws.com/documentation/templates/security_vpc_legacy.yaml
       Parameters:
         sshKeyPairName: !Ref sshKeyPairName
         CloudOneAPIKEY: !Ref CloudOneAPIKEY
