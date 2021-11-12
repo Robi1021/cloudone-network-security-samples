@@ -1,6 +1,6 @@
 # Trend Micro Cloud One™ – Network Security Samples
 
-This repository is intended for Network Security customers. It contains scripts and AWS CloudFormation templates for various deployment types that customer could leverage for PoC purposes.
+This repository is intended for Network Security customers. It contains scripts and AWS CloudFormation and Azure Terraform templates for various deployment types that customer could leverage for PoC purposes.
 
 Below are 3 deployments that this repository currently supports:
 1. [Edge Deployment](edge-deployment/README.md)
