@@ -12,8 +12,8 @@ terraform {
 # Azure Creds
 provider "azurerm" {
   features {}
-  subscription_id = "sub_id"
-  client_id       = "client_id"
-  client_secret   = "client_secret"
-  tenant_id       = "tenant_id"
+  subscription_id = var.sub_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
