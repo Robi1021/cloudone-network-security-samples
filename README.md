@@ -6,3 +6,4 @@ Below are 3 deployments that this repository currently supports:
 1. [Edge Deployment](edge-deployment/README.md)
 2. [Centralized Deployment with Gateway Load Balancer](centralized-with-gwlb/README.md)
 3. [East West Deployment](east-west-deployment/README.md)
+4. [Terraform Demo Deployments](demo_terraform/README.md) 
