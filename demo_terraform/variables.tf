@@ -43,3 +43,13 @@ variable "tenant_id" {
   description = "Tenant_ID"
   default     = "3e04753a-ae5b-42d4-a86d-d6f05460f9e4"
 }
+
+variable "admin_username" {
+  description = "Admin Username Webserver"
+  default     = "demoadmin"
+}
+
+variable "admin_password" {
+  description = "Admin Password Webserver"
+  default     = "CloudOne1234!" 
+}

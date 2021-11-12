@@ -38,8 +38,8 @@ resource "azurerm_linux_virtual_machine" "webserver" {
   network_interface_ids           = [azurerm_network_interface.webserver-nic.id]
   disable_password_authentication = false
   size                            = "Standard_D2s_v4"
-  admin_username                  = "demoadmin"
-  admin_password                  = "CloudOne1234!"
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   /*   user_data                       = <<EOF
   #! /bin/bash
   sudo apt-get update
