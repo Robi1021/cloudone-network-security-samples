@@ -19,11 +19,6 @@ variable "demoenv" {
   default     = "Demo"
 }
 
-variable "demoenv" {
-  description = "Demo Enviroment"
-  default     = "Demo"
-}
-
 variable "sub_id" {
   description = "Subscription_ID"
   default     = "e0b488d0-e8ed-426d-bb22-5dcce490cca9"
